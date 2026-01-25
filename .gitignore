@@ -1,0 +1,6 @@
+*.o
+parser.c
+scanner.c
+token.h
+parser.output
+bminor
