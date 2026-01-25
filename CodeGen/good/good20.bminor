@@ -1,11 +1,6 @@
 
 main:function integer ( ) = {
    y:auto;
-   print y;
-   y = "a realllllllllllllllllllllllyyyyyyyyyyyyy loooooooooooooooonnnnnnnnnnnnnnnnnngggggggggggggg strrrrrrinnnnnnnggggggg\n";
-   r:integer = 1000000000;
-   u:integer = r++;
-   print y, r, "\n";
-   print u, "\n";
-   return 0;
+   y = 5;
+   return y;
 }

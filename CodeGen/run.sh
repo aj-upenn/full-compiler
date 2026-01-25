@@ -1,4 +1,2 @@
-#make && ./bminor -codegen sourcefile.bminor a.s && gcc -g a.s library.c -o myprogram && ./myprogram
-./bminor -codegen sourcefile.bminor a.s && gcc -no-pie -g a.s library.c -o myprogram && ./myprogram
-
-#echo "Return $?"
+#rm -f a.s && make && ./bminor -codegen good/good20.bminor a.s && gcc -no-pie -g a.s library.c -o myprogram && ./myprogram && echo "Return $?"
+rm -f a.s && make && ./bminor -codegen good/good20.bminor a.s && gcc -no-pie -g a.s -o myprogram && ./myprogram && echo "Return $?"
