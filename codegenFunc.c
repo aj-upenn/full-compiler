@@ -14,6 +14,7 @@ void codegen(char * input_filename, char * output_filename){
    ofp = fopen(output_filename, "w");
    scratch_table_create();
    fprintf(ofp, ".file \"%s\"\n", input_filename);
+   fprintf(ofp, ".section .note.GNU-stack,\"\",@progbits\n");
    fprintf(ofp, ".data\n");
    fprintf(ofp, "   .global strcmp\n");
    decl_codegen(program_pointer);

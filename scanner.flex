@@ -14,7 +14,7 @@ LITERAL_STRING \"([^"^\n^\\]|(\\.)){0,255}\"
 
 %%
 
-(" "|\t|\n) /* skip whitespace */                                                /* WHITESPACE */
+(" "|\t|\n|\r) /* skip whitespace */                                                /* WHITESPACE */
 
 
 array        { return TOKEN_KEY_ARRAY; }                                         /* KEYWORDS AND IDENTIFIERS */ 

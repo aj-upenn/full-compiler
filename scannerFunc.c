@@ -201,6 +201,7 @@ int printOuptut(enum yytokentype token, char* text, bool parsing){
 			return -1;
       case TOKEN_ERROR_UNDEFINED_CHAR:
          fprintf(stderr, "Scan Error: %s is not a valid character.\n", text);
+         fprintf(stderr, "|%d|\n", text[0]);
          free(buf);
 			return -1;
       default:

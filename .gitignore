@@ -1,4 +1,5 @@
 *.o
+*.s
 parser.c
 scanner.c
 token.h
