@@ -510,6 +510,7 @@ void expr_codegen( struct expr * e ){
          scratch_free(e->left->reg);
          break;
       case EXPR_INCREMENT:
+         fprintf(ofp, "   MOVQ %s, %%rax\n", symbol_codegen(e->left->symbol));
          fprintf(ofp, "   INCQ %s\n", symbol_codegen(e->left->symbol));
          e->reg = scratch_alloc();
          break;

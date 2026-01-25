@@ -5,3 +5,5 @@ scanner.c
 token.h
 parser.output
 bminor
+myprogram
+git 
