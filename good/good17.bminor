@@ -1,0 +1,11 @@
+//Check register allocations
+
+main:function void () = {
+   a:boolean = false;
+   y:integer = 3;
+   if(!a && true){
+      print "Should print!\n";
+   }
+
+   print a, " ", y, "\n";
+}

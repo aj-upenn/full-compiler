@@ -1,0 +1,5 @@
+main: function void () = {
+   a:auto = 5;
+   b:auto = "lo\n" == "lo\n" ? true : false;
+   print a, b;
+}

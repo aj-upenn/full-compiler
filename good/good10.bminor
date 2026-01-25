@@ -1,0 +1,11 @@
+
+f:function void () = {
+   a:integer = 3;
+   b:char = 'a';
+   c:string = "str\0ing\0";
+   print a, " ", b, " ", c, "\n";
+}
+
+main: function integer () = {
+   f();
+}

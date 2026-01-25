@@ -1,0 +1,9 @@
+
+main:function integer ( ) = {
+   y:auto;
+   print y;
+   y = "a realllllllllllllllllllllllyyyyyyyyyyyyy loooooooooooooooonnnnnnnnnnnnnnnnnngggggggggggggg strrrrrrinnnnnnnggggggg\n";
+   r:integer = 1000000000;
+   print y, r, "\n";
+   return 0;
+}

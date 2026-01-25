@@ -1,0 +1,10 @@
+rec: function void (b:integer) = {
+   if(b > 10) { return; }
+   print b, "\n";
+   b++;
+   rec(b);
+}
+
+main: function void () = {
+   rec(0);
+}

@@ -1,0 +1,9 @@
+c1:char = 'a';
+c2:char = '\n';
+c3:char = '\\';
+c4:char = '\0';
+
+main: function void () = {
+   print c1,c2,c3,c4,'p';
+   print;
+}

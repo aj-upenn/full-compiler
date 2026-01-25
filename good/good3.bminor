@@ -1,0 +1,14 @@
+a:function void (h:string) = {
+   print h;
+} 
+
+s1:string = "aaa";
+main: function void () = {
+   s2:string = "aaa";
+    print "hi" == "hi", "\n";
+    print s1 == s2, "\n";
+    a(s2);
+    i:integer;
+    i;
+    3;
+}

@@ -1,0 +1,6 @@
+a:array [2] integer = {1,1};
+main: function integer () = {
+   print a[0] == a[1], "\n";
+   a:auto = 'o';
+   print a;
+}

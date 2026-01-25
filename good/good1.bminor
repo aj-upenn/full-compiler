@@ -1,0 +1,9 @@
+//Nested Functions
+product: function integer (a:integer, b:integer) = {
+   return a*b;
+}
+
+main: function integer () = {
+   print product(product(product(3,2), product(2,2)), product(product(1,4), product(7,5)));
+   return 0;
+}

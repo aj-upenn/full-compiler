@@ -1,0 +1,40 @@
+
+a:array [10] integer;
+
+rand: function integer ();
+srand: function void ( seed: integer );
+time: function integer ( zero: integer );
+
+print_arr: function void () = {
+   i:integer;
+   for(i = 0; i < 10; i++){
+      print a[i], "\n";
+   }
+   print "----------------\n";
+}
+
+main:function void () = {
+   srand(time(0));
+   i:integer;
+   j:integer;
+   temp:integer;
+   for(i = 0; i < 10; i++){
+      a[i] = rand() % 100;
+   }
+
+   print_arr();
+
+   for(i = 0; i < 10; i++){
+      for(j = 0; j < 10; j++){
+         if(a[i] < a[j]){
+            temp = a[i];
+            a[i] = a[j];
+            a[j] = temp;
+         }
+      }
+   }
+
+   print_arr();
+
+   length:integer = 10/2;
+}

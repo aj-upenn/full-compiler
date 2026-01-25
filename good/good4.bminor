@@ -1,0 +1,16 @@
+a:array [5] integer;
+s1:string = "4344";
+
+fcn:function void (z:array [5] integer) = {
+   print z[0], "\n";
+}
+main: function void () = {
+   i:integer;
+   for(i = 0; i < 5; i++){
+      a[i] = i;
+   }
+
+   for(i = 0; i < 5; i++){
+      print a[i], "\n";
+   }
+}

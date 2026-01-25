@@ -1,0 +1,5 @@
+main: function integer () = {
+   print 2^3^2, "\n";
+   print 2^(3^2), "\n";
+   print (2^3)^2, "\n";
+}

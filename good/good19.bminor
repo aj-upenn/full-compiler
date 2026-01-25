@@ -1,0 +1,8 @@
+
+arr:array [21] char = {'\n','\n','G','o','o','d',' ','g','i','r','l',',',' ','s','a','d',' ','b','o','y','\n'};
+main:function void () = {
+   j:integer;
+   for(j = 0; j < 25; j ++) {
+      print arr[j];
+   }
+}

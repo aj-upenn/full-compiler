@@ -1,0 +1,8 @@
+
+l:integer = 4;
+main:function boolean () = {
+   x:integer = 5;
+   x--;
+   print x == l;
+   return x == l;
+}

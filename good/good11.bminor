@@ -1,0 +1,10 @@
+factorial:function integer (i:integer);
+
+main:function void () = {
+   print factorial(5);
+}
+
+factorial:function integer (i:integer) = {
+   if(i == 0) { return 1; }
+   return i * factorial(i-1);
+}
