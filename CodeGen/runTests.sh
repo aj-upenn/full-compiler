@@ -1,4 +1,3 @@
-#!bin/sh
 
 FLAG=$1
 
@@ -6,7 +5,7 @@ goodtest(){
     for testfile in given/good*.bminor 
     do
         echo "$testfile Output:"
-        ./bminor -codegen $testfile a.s && gcc -g a.s library.c -o myprogram && ./myprogram
+        ./bminor -codegen $testfile a.s && gcc -g -no-pie a.s library.c -o myprogram && ./myprogram
         echo ""
     done
 
@@ -14,7 +13,7 @@ goodtest(){
    for testfile in good/good*.bminor 
     do
         echo "$testfile Output:"
-        ./bminor -codegen $testfile a.s && gcc -g a.s library.c -o myprogram && ./myprogram
+        ./bminor -codegen $testfile a.s && gcc -g -no-pie a.s library.c -o myprogram && ./myprogram
         echo ""
     done
     
