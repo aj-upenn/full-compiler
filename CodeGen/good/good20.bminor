@@ -1,6 +1,10 @@
 
+x:integer = 7;
+
 main:function integer ( ) = {
    y:auto;
    y = 5;
+//   print 7;
+//   print '\n';
    return y;
 }
