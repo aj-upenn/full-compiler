@@ -1,7 +1,7 @@
 CMP = gcc -Wall
-O_FILES = main.o scannerAssembler.o parserAssembler.o 
+O_FILES = main.o scannerAssembler.o parserAssembler.o scannerAssemblerFunc.o
 
-all: clean bminor
+all: clean assembler
 
 main.o: $(filter-out main.o, $(O_FILES))
 
@@ -17,10 +17,10 @@ parserAssembler.c token.h: parserAssembler.bison
 	$(CMP) -c $< -o $@ 
 
 # Executable
-bminor: token.h $(O_FILES)
-	$(CMP) $(O_FILES) -o bminor
+assembler: token.h $(O_FILES)
+	$(CMP) $(O_FILES) -o assembler
 
 
 # Clean
 clean:
-	rm -f *.o bminor scannerAssembler.c token.h parserAssembler.c *.output
+	rm -f *.o assembler scannerAssembler.c token.h parserAssembler.c *.output
