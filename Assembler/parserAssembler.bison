@@ -61,6 +61,7 @@
 %token TOKEN_INSTR_CALL
 %token TOKEN_INSTR_PUSHQ
 %token TOKEN_INSTR_POPQ
+%token TOKEN_INSTR_RET
 
 %token TOKEN_ERROR_UNDEFINED_CHAR
 %token TOKEN_EOF
@@ -97,7 +98,98 @@ extern struct decl * program_pointer;
 /* PROGRAM */
 
 program  : /* epsilon */   { $$ = 0; }
+         | line_list       { $$ = 0; }
          ;
+
+identifier : TOKEN_IDENTIFIER
+           ;
+
+operand  : identifier
+         | immediate
+         | memory
+         | register
+         ;
+
+memory   : TOKEN_OP_LEFT_PAREN register TOKEN_OP_RIGHT_PAREN
+         | TOKEN_DIGIT TOKEN_OP_LEFT_PAREN register TOKEN_OP_RIGHT_PAREN
+         ;
+
+label    :  identifier TOKEN_OP_COLON
+         ;
+
+immediate: TOKEN_IMMEDIATE
+         ;
+
+register : TOKEN_REGISTER_RAX
+         | TOKEN_REGISTER_RBX
+         | TOKEN_REGISTER_RCX
+         | TOKEN_REGISTER_RDX
+         | TOKEN_REGISTER_FIRST_FUNCTION_ARG
+         | TOKEN_REGISTER_SECOND_FUNCTION_ARG
+         | TOKEN_REGISTER_STACK_POINTER
+         | TOKEN_REGISTER_FRAME_POINTER
+         | TOKEN_REGISTER_8
+         | TOKEN_REGISTER_9
+         | TOKEN_REGISTER_10
+         | TOKEN_REGISTER_11
+         | TOKEN_REGISTER_12
+         | TOKEN_REGISTER_13
+         | TOKEN_REGISTER_14
+         | TOKEN_REGISTER_15
+         ;
+
+instruction_2_operand: TOKEN_INSTR_MOVQ
+                     | TOKEN_INSTR_LEAQ
+                     | TOKEN_INSTR_ADDQ
+                     | TOKEN_INSTR_SUBQ
+                     | TOKEN_INSTR_CMPQ
+                     ;
+
+instruction_1_operand: TOKEN_INSTR_NEGQ
+                     | TOKEN_INSTR_IMULQ
+                     | TOKEN_INSTR_IDIVQ
+                     | TOKEN_INSTR_INCQ
+                     | TOKEN_INSTR_DECQ
+                     | TOKEN_INSTR_CALL
+                     | TOKEN_INSTR_JE
+                     | TOKEN_INSTR_JNE
+                     | TOKEN_INSTR_JL
+                     | TOKEN_INSTR_JLE
+                     | TOKEN_INSTR_JG
+                     | TOKEN_INSTR_JGE
+                     | TOKEN_INSTR_JMP
+                     | TOKEN_INSTR_PUSHQ
+                     | TOKEN_INSTR_POPQ
+                     ;
+                  
+instruction_0_operand: TOKEN_INSTR_CQO
+                     | TOKEN_INSTR_RET
+                     ;
+
+instruction : instruction_2_operand operand TOKEN_OP_COMMA operand
+            | instruction_1_operand operand
+            | instruction_0_operand
+            ;
+
+line        : instruction TOKEN_OP_NEWLINE
+            | label TOKEN_OP_NEWLINE
+            | directive TOKEN_OP_NEWLINE
+            | TOKEN_OP_NEWLINE
+            ;
+
+directive   : TOKEN_DIRECTIVE_FILE TOKEN_LITERAL_STRING
+            | TOKEN_DIRECTIVE_SECTION TOKEN_DIRECTIVE_GNU_STACK TOKEN_OP_COMMA TOKEN_LITERAL_STRING TOKEN_OP_COMMA TOKEN_DIRECTIVE_PROGBITS
+            | TOKEN_DIRECTIVE_DATA
+            | TOKEN_DIRECTIVE_GLOBAL identifier
+            | TOKEN_DIRECTIVE_TEXT
+            | TOKEN_DIRECTIVE_STRING TOKEN_LITERAL_STRING
+            | TOKEN_DIRECTIVE_QUAD TOKEN_DIGIT
+            ;
+
+line_list   : line line_list
+            | line
+            ; 
+
 
 %%
 

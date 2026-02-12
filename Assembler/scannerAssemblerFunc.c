@@ -198,6 +198,9 @@ int printOuptut(enum yytokentype token, char* text, bool parsing){
       case TOKEN_INSTR_POPQ:
          if(!parsing) printf("INSTR_POPQ\n");
 			break;
+      case TOKEN_INSTR_RET:
+         if(!parsing) printf("INSTR_RET\n");
+			break;
       case TOKEN_ERROR_UNDEFINED_CHAR:
          fprintf(stderr, "Scan Error: %s is not a valid character.\n", text);
          fprintf(stderr, "|%d|\n", text[0]);
