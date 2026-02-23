@@ -1,5 +1,5 @@
-CMP = gcc -Wall
-O_FILES = main.o scannerAssembler.o parserAssembler.o scannerAssemblerFunc.o parserAssemblerFunc.o
+CMP = gcc -Wall -g -Wextra
+O_FILES = main.o scannerAssembler.o parserAssembler.o scannerAssemblerFunc.o parserAssemblerFunc.o printerAssemblerFunc.o astAssembler.o 
 
 all: clean assembler
 

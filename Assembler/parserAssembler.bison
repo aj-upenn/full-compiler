@@ -67,17 +67,27 @@
 %token TOKEN_EOF
 
 %union {
-	struct decl *decl;
-	struct stmt *stmt;
-	struct expr *expr;
-   struct type *type;
-   struct param_list *param_list;
-   struct symbol *symbol;
+   struct asm_instr* instr;
+   struct asm_operand* operand;
+   struct asm_line* line;
+   struct asm_directive* directive;
+   struct asm_program* program;
+   int command;
+   int reg_num;
+   int imm;
    char *name;
-   int value;
+   
 };
 
-%type <decl> program
+%type <command> instruction_2_operand instruction_1_operand instruction_0_operand
+%type <instr> instruction
+%type <reg_num> register
+%type <imm> immediate literal_digit
+%type <name> identifier literal_string
+%type <operand> operand memory
+%type <line> line label line_list
+%type <program> program
+%type <directive> directive
 
 %{
 
@@ -85,11 +95,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "scannerAssemblerFunc.h"
+#include "astAssembler.h"
 
 extern char *yytext;
 extern int yylex();
 extern int yyerror( char *str );
-extern struct decl * program_pointer;
+extern struct asm_program * program_pointer;
 
 %}
 
@@ -98,98 +110,104 @@ extern struct decl * program_pointer;
 /* PROGRAM */
 
 program  : /* epsilon */   { $$ = 0; }
-         | line_list       { $$ = 0; }
+         | line_list       { program_pointer = $$ = program_create($1); }
          ;
 
-identifier : TOKEN_IDENTIFIER
+identifier : TOKEN_IDENTIFIER { $$ = strdup(yytext); }
            ;
 
-operand  : identifier
-         | immediate
-         | memory
-         | register
+operand  : identifier { $$ = operand_create_label($1); }
+         | immediate  { $$ = operand_create_immediate($1); }
+         | memory     { $$ = $1; }
+         | register   { $$ = operand_create_register($1); }
          ;
 
-memory   : TOKEN_OP_LEFT_PAREN register TOKEN_OP_RIGHT_PAREN
-         | TOKEN_DIGIT TOKEN_OP_LEFT_PAREN register TOKEN_OP_RIGHT_PAREN
+memory   : TOKEN_OP_LEFT_PAREN register TOKEN_OP_RIGHT_PAREN                 { $$ = operand_create_memory(0, $2); }
+         | literal_digit TOKEN_OP_LEFT_PAREN register TOKEN_OP_RIGHT_PAREN   { $$ = operand_create_memory($1, $3); }
          ;
 
-label    :  identifier TOKEN_OP_COLON
+label    :  identifier TOKEN_OP_COLON { $$ = line_create(ASM_LINE_LABEL, $1, 0, 0); }
          ;
 
-immediate: TOKEN_IMMEDIATE
+immediate: TOKEN_IMMEDIATE  { $$ = atoi(yytext+1); }  // skip $  
          ;
 
-register : TOKEN_REGISTER_RAX
-         | TOKEN_REGISTER_RBX
-         | TOKEN_REGISTER_RCX
-         | TOKEN_REGISTER_RDX
-         | TOKEN_REGISTER_FIRST_FUNCTION_ARG
-         | TOKEN_REGISTER_SECOND_FUNCTION_ARG
-         | TOKEN_REGISTER_STACK_POINTER
-         | TOKEN_REGISTER_FRAME_POINTER
-         | TOKEN_REGISTER_8
-         | TOKEN_REGISTER_9
-         | TOKEN_REGISTER_10
-         | TOKEN_REGISTER_11
-         | TOKEN_REGISTER_12
-         | TOKEN_REGISTER_13
-         | TOKEN_REGISTER_14
-         | TOKEN_REGISTER_15
-         ;
+register : TOKEN_REGISTER_RAX                  { $$ = OP_RAX; }
+         | TOKEN_REGISTER_RBX                  { $$ = OP_RBX; }
+         | TOKEN_REGISTER_RCX                  { $$ = OP_RCX; }
+         | TOKEN_REGISTER_RDX                  { $$ = OP_RDX; }
+         | TOKEN_REGISTER_FIRST_FUNCTION_ARG   { $$ = OP_FIRST_FUNCTION_ARG; }
+         | TOKEN_REGISTER_SECOND_FUNCTION_ARG  { $$ = OP_SECOND_FUNCTION_ARG; }
+         | TOKEN_REGISTER_STACK_POINTER        { $$ = OP_STACK_POINTER; }
+         | TOKEN_REGISTER_FRAME_POINTER        { $$ = OP_FRAME_POINTER; }
+         | TOKEN_REGISTER_8                    { $$ = OP_R8; }
+         | TOKEN_REGISTER_9                    { $$ = OP_R9; }
+         | TOKEN_REGISTER_10                   { $$ = OP_R10; }
+         | TOKEN_REGISTER_11                   { $$ = OP_R11; }
+         | TOKEN_REGISTER_12                   { $$ = OP_R12; }
+         | TOKEN_REGISTER_13                   { $$ = OP_R13; }
+         | TOKEN_REGISTER_14                   { $$ = OP_R14; }
+         | TOKEN_REGISTER_15                   { $$ = OP_R15; }
+    ;
 
-instruction_2_operand: TOKEN_INSTR_MOVQ
-                     | TOKEN_INSTR_LEAQ
-                     | TOKEN_INSTR_ADDQ
-                     | TOKEN_INSTR_SUBQ
-                     | TOKEN_INSTR_CMPQ
-                     ;
+instruction_2_operand : TOKEN_INSTR_MOVQ  { $$ = OP_INSTR_MOVQ; }
+                      | TOKEN_INSTR_LEAQ  { $$ = OP_INSTR_LEAQ; }
+                      | TOKEN_INSTR_ADDQ  { $$ = OP_INSTR_ADDQ; }
+                      | TOKEN_INSTR_SUBQ  { $$ = OP_INSTR_SUBQ; }
+                      | TOKEN_INSTR_CMPQ  { $$ = OP_INSTR_CMPQ; }
+                      ;
 
-instruction_1_operand: TOKEN_INSTR_NEGQ
-                     | TOKEN_INSTR_IMULQ
-                     | TOKEN_INSTR_IDIVQ
-                     | TOKEN_INSTR_INCQ
-                     | TOKEN_INSTR_DECQ
-                     | TOKEN_INSTR_CALL
-                     | TOKEN_INSTR_JE
-                     | TOKEN_INSTR_JNE
-                     | TOKEN_INSTR_JL
-                     | TOKEN_INSTR_JLE
-                     | TOKEN_INSTR_JG
-                     | TOKEN_INSTR_JGE
-                     | TOKEN_INSTR_JMP
-                     | TOKEN_INSTR_PUSHQ
-                     | TOKEN_INSTR_POPQ
-                     ;
+instruction_1_operand : TOKEN_INSTR_NEGQ   { $$ = OP_INSTR_NEGQ; }
+                      | TOKEN_INSTR_IMULQ  { $$ = OP_INSTR_IMULQ; }
+                      | TOKEN_INSTR_IDIVQ  { $$ = OP_INSTR_IDIVQ; }
+                      | TOKEN_INSTR_INCQ   { $$ = OP_INSTR_INCQ; }
+                      | TOKEN_INSTR_DECQ   { $$ = OP_INSTR_DECQ; }
+                      | TOKEN_INSTR_CALL   { $$ = OP_INSTR_CALL; }
+                      | TOKEN_INSTR_JE     { $$ = OP_INSTR_JE; }
+                      | TOKEN_INSTR_JNE    { $$ = OP_INSTR_JNE; }
+                      | TOKEN_INSTR_JL     { $$ = OP_INSTR_JL; }
+                      | TOKEN_INSTR_JLE    { $$ = OP_INSTR_JLE; }
+                      | TOKEN_INSTR_JG     { $$ = OP_INSTR_JG; }
+                      | TOKEN_INSTR_JGE    { $$ = OP_INSTR_JGE; }
+                      | TOKEN_INSTR_JMP    { $$ = OP_INSTR_JMP; }
+                      | TOKEN_INSTR_PUSHQ  { $$ = OP_INSTR_PUSHQ; }
+                      | TOKEN_INSTR_POPQ   { $$ = OP_INSTR_POPQ; }
+                      ;
                   
-instruction_0_operand: TOKEN_INSTR_CQO
-                     | TOKEN_INSTR_RET
+instruction_0_operand: TOKEN_INSTR_CQO     { $$ = OP_INSTR_CQO; }
+                     | TOKEN_INSTR_RET     { $$ = OP_INSTR_RET; }
                      ;
 
-instruction : instruction_2_operand operand TOKEN_OP_COMMA operand
-            | instruction_1_operand operand
-            | instruction_0_operand
+instruction : instruction_2_operand operand TOKEN_OP_COMMA operand { $$ = instr_create($1, $2, $4); }
+            | instruction_1_operand operand                        { $$ = instr_create($1, $2, 0); }
+            | instruction_0_operand                                { $$ = instr_create($1, 0, 0); } 
             ;
 
-line        : instruction TOKEN_OP_NEWLINE
-            | label TOKEN_OP_NEWLINE
-            | directive TOKEN_OP_NEWLINE
-            | TOKEN_OP_NEWLINE
+line        : instruction TOKEN_OP_NEWLINE    { $$ = line_create(ASM_LINE_INSTRUCTION, 0, 0, $1); }   
+            | label TOKEN_OP_NEWLINE          { $$ = $1; }   
+            | directive TOKEN_OP_NEWLINE      { $$ = line_create(ASM_LINE_DIRECTIVE, 0, $1, 0); }   
+            | TOKEN_OP_NEWLINE                { $$ = 0; }   
             ;
 
-directive   : TOKEN_DIRECTIVE_FILE TOKEN_LITERAL_STRING
-            | TOKEN_DIRECTIVE_SECTION TOKEN_DIRECTIVE_GNU_STACK TOKEN_OP_COMMA TOKEN_LITERAL_STRING TOKEN_OP_COMMA TOKEN_DIRECTIVE_PROGBITS
-            | TOKEN_DIRECTIVE_DATA
-            | TOKEN_DIRECTIVE_GLOBAL identifier
-            | TOKEN_DIRECTIVE_TEXT
-            | TOKEN_DIRECTIVE_STRING TOKEN_LITERAL_STRING
-            | TOKEN_DIRECTIVE_QUAD TOKEN_DIGIT
+directive   : TOKEN_DIRECTIVE_FILE literal_string                             { $$ = directive_create(DIR_FILE, $2, 0, 0); }                                                        
+            | TOKEN_DIRECTIVE_SECTION TOKEN_DIRECTIVE_GNU_STACK TOKEN_OP_COMMA 
+              literal_string TOKEN_OP_COMMA TOKEN_DIRECTIVE_PROGBITS          { $$ = directive_create(DIR_SECTION, $4, 0, 0); }  
+            | TOKEN_DIRECTIVE_DATA                                            { $$ = directive_create(DIR_DATA, 0, 0, 0); }  
+            | TOKEN_DIRECTIVE_GLOBAL identifier                               { $$ = directive_create(DIR_GLOBAL, $2, 0, 0); }  
+            | TOKEN_DIRECTIVE_TEXT                                            { $$ = directive_create(DIR_TEXT, 0, 0, 0); }  
+            | TOKEN_DIRECTIVE_STRING literal_string                           { $$ = directive_create(DIR_STRING, 0, $2, 0); }  
+            | TOKEN_DIRECTIVE_QUAD literal_digit                              { $$ = directive_create(DIR_QUAD, 0, 0, $2); }  
             ;
 
-line_list   : line line_list
-            | line
+line_list   : line line_list   { $$ = $1; $1->next = $2; }
+            | line             { $$ = $1; }
             ; 
+            
+literal_string : TOKEN_LITERAL_STRING  { $$ = strdup(beautifyString(yytext)); }
+               ;
 
+literal_digit : TOKEN_DIGIT { $$ = atoi(yytext); }
+              ;
 
 %%
 

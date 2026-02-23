@@ -168,27 +168,31 @@ enum yysymbol_kind_t
   YYSYMBOL_instruction = 72,               /* instruction  */
   YYSYMBOL_line = 73,                      /* line  */
   YYSYMBOL_directive = 74,                 /* directive  */
-  YYSYMBOL_line_list = 75                  /* line_list  */
+  YYSYMBOL_line_list = 75,                 /* line_list  */
+  YYSYMBOL_literal_string = 76,            /* literal_string  */
+  YYSYMBOL_literal_digit = 77              /* literal_digit  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
 
 /* Second part of user prologue.  */
-#line 82 "parserAssembler.bison"
+#line 92 "parserAssembler.bison"
 
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "scannerAssemblerFunc.h"
+#include "astAssembler.h"
 
 extern char *yytext;
 extern int yylex();
 extern int yyerror( char *str );
-extern struct decl * program_pointer;
+extern struct asm_program * program_pointer;
 
 
-#line 192 "parserAssembler.c"
+#line 196 "parserAssembler.c"
 
 
 #ifdef short
@@ -510,18 +514,18 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  47
+#define YYFINAL  49
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   95
+#define YYLAST   110
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  61
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  15
+#define YYNNTS  17
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  66
+#define YYNRULES  68
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  89
+#define YYNSTATES  91
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   315
@@ -576,13 +580,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,   100,   100,   101,   104,   107,   108,   109,   110,   113,
-     114,   117,   120,   123,   124,   125,   126,   127,   128,   129,
-     130,   131,   132,   133,   134,   135,   136,   137,   138,   141,
-     142,   143,   144,   145,   148,   149,   150,   151,   152,   153,
-     154,   155,   156,   157,   158,   159,   160,   161,   162,   165,
-     166,   169,   170,   171,   174,   175,   176,   177,   180,   181,
-     182,   183,   184,   185,   186,   189,   190
+       0,   112,   112,   113,   116,   119,   120,   121,   122,   125,
+     126,   129,   132,   135,   136,   137,   138,   139,   140,   141,
+     142,   143,   144,   145,   146,   147,   148,   149,   150,   153,
+     154,   155,   156,   157,   160,   161,   162,   163,   164,   165,
+     166,   167,   168,   169,   170,   171,   172,   173,   174,   177,
+     178,   181,   182,   183,   186,   187,   188,   189,   192,   193,
+     195,   196,   197,   198,   199,   202,   203,   206,   209
 };
 #endif
 
@@ -622,7 +626,8 @@ static const char *const yytname[] =
   "TOKEN_ERROR_UNDEFINED_CHAR", "TOKEN_EOF", "$accept", "program",
   "identifier", "operand", "memory", "label", "immediate", "register",
   "instruction_2_operand", "instruction_1_operand",
-  "instruction_0_operand", "instruction", "line", "directive", "line_list", YY_NULLPTR
+  "instruction_0_operand", "instruction", "line", "directive", "line_list",
+  "literal_string", "literal_digit", YY_NULLPTR
 };
 
 static const char *
@@ -632,7 +637,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-37)
+#define YYPACT_NINF (-42)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -646,15 +651,16 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       9,   -37,   -37,   -18,   -37,   -32,   -27,   -31,   -29,   -37,
-     -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,
-     -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,
-     -37,   -37,     8,     4,     5,     6,     6,   -37,     7,     9,
-      60,   -37,   -37,   -37,    10,   -37,   -37,   -37,   -37,   -37,
-     -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,
-     -37,   -37,   -37,   -37,   -37,   -37,   -37,    66,    65,   -37,
-      63,   -37,   -37,   -37,   -37,   -37,   -37,   -37,    -7,    65,
-      67,     6,    68,    70,   -37,   -37,    -1,   -37,   -37
+      36,   -42,   -42,   -17,   -42,   -31,   -26,   -30,   -30,   -42,
+     -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,
+     -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,
+     -42,   -42,    27,     6,     4,     5,     5,   -42,     7,    36,
+       8,   -42,   -42,   -42,   -42,    11,   -42,   -42,   -42,   -42,
+     -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,
+     -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,    92,
+     -42,    12,   -42,   -42,   -42,    10,   -42,   -42,   -42,   -42,
+     -30,    14,     5,    92,    15,   -42,   -42,    17,    13,   -42,
+     -42
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -666,25 +672,26 @@ static const yytype_int8 yydefact[] =
       29,    30,    31,    32,    35,    36,    34,    37,    38,    49,
       33,    40,    41,    42,    44,    43,    45,    46,    39,    47,
       48,    50,     0,     0,     0,     0,     0,    53,     0,    66,
-       0,     3,    64,    61,     0,    58,    63,     1,    11,    55,
-      13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
-      23,    24,    25,    26,    27,    28,    12,     0,     0,     5,
-       0,     7,     6,     8,    52,    54,    65,    56,     0,     0,
-       0,     0,     0,     0,     9,    51,     0,    10,    59
+       0,     3,    68,    64,    61,     0,    67,    58,    63,     1,
+      11,    55,    13,    14,    15,    16,    17,    18,    19,    20,
+      21,    22,    23,    24,    25,    26,    27,    28,    12,     0,
+       5,     0,     7,     6,     8,     0,    52,    54,    65,    56,
+       0,     0,     0,     0,     0,     9,    51,     0,     0,    10,
+      59
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -37,   -37,     1,   -36,   -37,   -37,   -37,    16,   -37,   -37,
-     -37,   -37,   -37,   -37,    49
+     -42,   -42,     2,   -35,   -42,   -42,   -42,   -41,   -42,   -42,
+     -42,   -42,   -42,   -42,    -2,    -8,    40
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,    32,    69,    70,    71,    34,    72,    73,    35,    36,
-      37,    38,    39,    40,    41
+       0,    32,    70,    71,    72,    34,    73,    74,    35,    36,
+      37,    38,    39,    40,    41,    47,    75
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -692,30 +699,34 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      74,    33,    42,     9,    44,    45,    43,    46,    47,    50,
-      51,    52,    53,    54,    55,    56,    57,    58,    59,    60,
-      61,    62,    63,    64,    65,    66,    67,    68,    48,    82,
-      49,    88,    75,    78,     1,     2,     3,     4,     5,     6,
-      33,     9,     7,     8,     9,    85,    10,    11,    12,    13,
-      14,    15,    16,    17,    18,    19,    20,    21,    22,    23,
-      24,    25,    26,    27,    28,    29,    30,    31,    50,    51,
-      52,    53,    54,    55,    56,    57,    58,    59,    60,    61,
-      62,    63,    64,    65,    80,    77,    81,    79,    76,    84,
-       0,    86,    87,     0,     0,    83
+      48,    76,    33,    42,     9,    45,    46,    44,    52,    53,
+      54,    55,    56,    57,    58,    59,    60,    61,    62,    63,
+      64,    65,    66,    67,    68,    42,    69,    49,    81,    51,
+      50,    83,    77,    79,    80,    82,    85,    78,    88,    89,
+       9,    33,    87,    43,     0,    90,     0,    86,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     1,     2,     3,     4,     5,     6,     0,     0,     7,
+       8,     9,    84,    10,    11,    12,    13,    14,    15,    16,
+      17,    18,    19,    20,    21,    22,    23,    24,    25,    26,
+      27,    28,    29,    30,    31,    52,    53,    54,    55,    56,
+      57,    58,    59,    60,    61,    62,    63,    64,    65,    66,
+      67
 };
 
 static const yytype_int8 yycheck[] =
 {
-      36,     0,    20,    35,    31,    36,     5,    36,     0,     3,
-       4,     5,     6,     7,     8,     9,    10,    11,    12,    13,
-      14,    15,    16,    17,    18,    19,    20,    21,    24,    36,
-      25,    32,    25,    23,    25,    26,    27,    28,    29,    30,
-      39,    35,    33,    34,    35,    81,    37,    38,    39,    40,
-      41,    42,    43,    44,    45,    46,    47,    48,    49,    50,
-      51,    52,    53,    54,    55,    56,    57,    58,     3,     4,
+       8,    36,     0,    20,    35,    31,    36,     5,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    68,    25,    23,    21,    39,    22,
-      -1,    23,    22,    -1,    -1,    79
+      15,    16,    17,    18,    19,    20,    21,     0,    69,    25,
+      24,    21,    25,    25,    23,    23,    22,    39,    23,    22,
+      35,    39,    83,     3,    -1,    32,    -1,    82,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    25,    26,    27,    28,    29,    30,    -1,    -1,    33,
+      34,    35,    80,    37,    38,    39,    40,    41,    42,    43,
+      44,    45,    46,    47,    48,    49,    50,    51,    52,    53,
+      54,    55,    56,    57,    58,     3,     4,     5,     6,     7,
+       8,     9,    10,    11,    12,    13,    14,    15,    16,    17,
+      18
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -726,11 +737,12 @@ static const yytype_int8 yystos[] =
       37,    38,    39,    40,    41,    42,    43,    44,    45,    46,
       47,    48,    49,    50,    51,    52,    53,    54,    55,    56,
       57,    58,    62,    63,    66,    69,    70,    71,    72,    73,
-      74,    75,    20,    63,    31,    36,    36,     0,    24,    25,
-       3,     4,     5,     6,     7,     8,     9,    10,    11,    12,
-      13,    14,    15,    16,    17,    18,    19,    20,    21,    63,
-      64,    65,    67,    68,    64,    25,    75,    25,    23,    21,
-      68,    23,    36,    68,    22,    64,    23,    22,    32
+      74,    75,    20,    77,    63,    31,    36,    76,    76,     0,
+      24,    25,     3,     4,     5,     6,     7,     8,     9,    10,
+      11,    12,    13,    14,    15,    16,    17,    18,    19,    21,
+      63,    64,    65,    67,    68,    77,    64,    25,    75,    25,
+      23,    68,    23,    21,    76,    22,    64,    68,    23,    22,
+      32
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -742,7 +754,7 @@ static const yytype_int8 yyr1[] =
       69,    69,    69,    69,    70,    70,    70,    70,    70,    70,
       70,    70,    70,    70,    70,    70,    70,    70,    70,    71,
       71,    72,    72,    72,    73,    73,    73,    73,    74,    74,
-      74,    74,    74,    74,    74,    75,    75
+      74,    74,    74,    74,    74,    75,    75,    76,    77
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -754,7 +766,7 @@ static const yytype_int8 yyr2[] =
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     4,     2,     1,     2,     2,     2,     1,     2,     6,
-       1,     2,     1,     2,     2,     2,     1
+       1,     2,     1,     2,     2,     2,     1,     1,     1
 };
 
 
@@ -1218,19 +1230,409 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: %empty  */
-#line 100 "parserAssembler.bison"
-                           { (yyval.decl) = 0; }
-#line 1224 "parserAssembler.c"
+#line 112 "parserAssembler.bison"
+                           { (yyval.program) = 0; }
+#line 1236 "parserAssembler.c"
     break;
 
   case 3: /* program: line_list  */
-#line 101 "parserAssembler.bison"
-                           { (yyval.decl) = 0; }
-#line 1230 "parserAssembler.c"
+#line 113 "parserAssembler.bison"
+                           { program_pointer = (yyval.program) = program_create((yyvsp[0].line)); }
+#line 1242 "parserAssembler.c"
+    break;
+
+  case 4: /* identifier: TOKEN_IDENTIFIER  */
+#line 116 "parserAssembler.bison"
+                              { (yyval.name) = strdup(yytext); }
+#line 1248 "parserAssembler.c"
+    break;
+
+  case 5: /* operand: identifier  */
+#line 119 "parserAssembler.bison"
+                      { (yyval.operand) = operand_create_label((yyvsp[0].name)); }
+#line 1254 "parserAssembler.c"
+    break;
+
+  case 6: /* operand: immediate  */
+#line 120 "parserAssembler.bison"
+                      { (yyval.operand) = operand_create_immediate((yyvsp[0].imm)); }
+#line 1260 "parserAssembler.c"
+    break;
+
+  case 7: /* operand: memory  */
+#line 121 "parserAssembler.bison"
+                      { (yyval.operand) = (yyvsp[0].operand); }
+#line 1266 "parserAssembler.c"
+    break;
+
+  case 8: /* operand: register  */
+#line 122 "parserAssembler.bison"
+                      { (yyval.operand) = operand_create_register((yyvsp[0].reg_num)); }
+#line 1272 "parserAssembler.c"
+    break;
+
+  case 9: /* memory: TOKEN_OP_LEFT_PAREN register TOKEN_OP_RIGHT_PAREN  */
+#line 125 "parserAssembler.bison"
+                                                                             { (yyval.operand) = operand_create_memory(0, (yyvsp[-1].reg_num)); }
+#line 1278 "parserAssembler.c"
+    break;
+
+  case 10: /* memory: literal_digit TOKEN_OP_LEFT_PAREN register TOKEN_OP_RIGHT_PAREN  */
+#line 126 "parserAssembler.bison"
+                                                                             { (yyval.operand) = operand_create_memory((yyvsp[-3].imm), (yyvsp[-1].reg_num)); }
+#line 1284 "parserAssembler.c"
+    break;
+
+  case 11: /* label: identifier TOKEN_OP_COLON  */
+#line 129 "parserAssembler.bison"
+                                      { (yyval.line) = line_create(ASM_LINE_LABEL, (yyvsp[-1].name), 0, 0); }
+#line 1290 "parserAssembler.c"
+    break;
+
+  case 12: /* immediate: TOKEN_IMMEDIATE  */
+#line 132 "parserAssembler.bison"
+                            { (yyval.imm) = atoi(yytext+1); }
+#line 1296 "parserAssembler.c"
+    break;
+
+  case 13: /* register: TOKEN_REGISTER_RAX  */
+#line 135 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_RAX; }
+#line 1302 "parserAssembler.c"
+    break;
+
+  case 14: /* register: TOKEN_REGISTER_RBX  */
+#line 136 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_RBX; }
+#line 1308 "parserAssembler.c"
+    break;
+
+  case 15: /* register: TOKEN_REGISTER_RCX  */
+#line 137 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_RCX; }
+#line 1314 "parserAssembler.c"
+    break;
+
+  case 16: /* register: TOKEN_REGISTER_RDX  */
+#line 138 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_RDX; }
+#line 1320 "parserAssembler.c"
+    break;
+
+  case 17: /* register: TOKEN_REGISTER_FIRST_FUNCTION_ARG  */
+#line 139 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_FIRST_FUNCTION_ARG; }
+#line 1326 "parserAssembler.c"
+    break;
+
+  case 18: /* register: TOKEN_REGISTER_SECOND_FUNCTION_ARG  */
+#line 140 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_SECOND_FUNCTION_ARG; }
+#line 1332 "parserAssembler.c"
+    break;
+
+  case 19: /* register: TOKEN_REGISTER_STACK_POINTER  */
+#line 141 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_STACK_POINTER; }
+#line 1338 "parserAssembler.c"
+    break;
+
+  case 20: /* register: TOKEN_REGISTER_FRAME_POINTER  */
+#line 142 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_FRAME_POINTER; }
+#line 1344 "parserAssembler.c"
+    break;
+
+  case 21: /* register: TOKEN_REGISTER_8  */
+#line 143 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_R8; }
+#line 1350 "parserAssembler.c"
+    break;
+
+  case 22: /* register: TOKEN_REGISTER_9  */
+#line 144 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_R9; }
+#line 1356 "parserAssembler.c"
+    break;
+
+  case 23: /* register: TOKEN_REGISTER_10  */
+#line 145 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_R10; }
+#line 1362 "parserAssembler.c"
+    break;
+
+  case 24: /* register: TOKEN_REGISTER_11  */
+#line 146 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_R11; }
+#line 1368 "parserAssembler.c"
+    break;
+
+  case 25: /* register: TOKEN_REGISTER_12  */
+#line 147 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_R12; }
+#line 1374 "parserAssembler.c"
+    break;
+
+  case 26: /* register: TOKEN_REGISTER_13  */
+#line 148 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_R13; }
+#line 1380 "parserAssembler.c"
+    break;
+
+  case 27: /* register: TOKEN_REGISTER_14  */
+#line 149 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_R14; }
+#line 1386 "parserAssembler.c"
+    break;
+
+  case 28: /* register: TOKEN_REGISTER_15  */
+#line 150 "parserAssembler.bison"
+                                               { (yyval.reg_num) = OP_R15; }
+#line 1392 "parserAssembler.c"
+    break;
+
+  case 29: /* instruction_2_operand: TOKEN_INSTR_MOVQ  */
+#line 153 "parserAssembler.bison"
+                                          { (yyval.command) = OP_INSTR_MOVQ; }
+#line 1398 "parserAssembler.c"
+    break;
+
+  case 30: /* instruction_2_operand: TOKEN_INSTR_LEAQ  */
+#line 154 "parserAssembler.bison"
+                                          { (yyval.command) = OP_INSTR_LEAQ; }
+#line 1404 "parserAssembler.c"
+    break;
+
+  case 31: /* instruction_2_operand: TOKEN_INSTR_ADDQ  */
+#line 155 "parserAssembler.bison"
+                                          { (yyval.command) = OP_INSTR_ADDQ; }
+#line 1410 "parserAssembler.c"
+    break;
+
+  case 32: /* instruction_2_operand: TOKEN_INSTR_SUBQ  */
+#line 156 "parserAssembler.bison"
+                                          { (yyval.command) = OP_INSTR_SUBQ; }
+#line 1416 "parserAssembler.c"
+    break;
+
+  case 33: /* instruction_2_operand: TOKEN_INSTR_CMPQ  */
+#line 157 "parserAssembler.bison"
+                                          { (yyval.command) = OP_INSTR_CMPQ; }
+#line 1422 "parserAssembler.c"
+    break;
+
+  case 34: /* instruction_1_operand: TOKEN_INSTR_NEGQ  */
+#line 160 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_NEGQ; }
+#line 1428 "parserAssembler.c"
+    break;
+
+  case 35: /* instruction_1_operand: TOKEN_INSTR_IMULQ  */
+#line 161 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_IMULQ; }
+#line 1434 "parserAssembler.c"
+    break;
+
+  case 36: /* instruction_1_operand: TOKEN_INSTR_IDIVQ  */
+#line 162 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_IDIVQ; }
+#line 1440 "parserAssembler.c"
+    break;
+
+  case 37: /* instruction_1_operand: TOKEN_INSTR_INCQ  */
+#line 163 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_INCQ; }
+#line 1446 "parserAssembler.c"
+    break;
+
+  case 38: /* instruction_1_operand: TOKEN_INSTR_DECQ  */
+#line 164 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_DECQ; }
+#line 1452 "parserAssembler.c"
+    break;
+
+  case 39: /* instruction_1_operand: TOKEN_INSTR_CALL  */
+#line 165 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_CALL; }
+#line 1458 "parserAssembler.c"
+    break;
+
+  case 40: /* instruction_1_operand: TOKEN_INSTR_JE  */
+#line 166 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_JE; }
+#line 1464 "parserAssembler.c"
+    break;
+
+  case 41: /* instruction_1_operand: TOKEN_INSTR_JNE  */
+#line 167 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_JNE; }
+#line 1470 "parserAssembler.c"
+    break;
+
+  case 42: /* instruction_1_operand: TOKEN_INSTR_JL  */
+#line 168 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_JL; }
+#line 1476 "parserAssembler.c"
+    break;
+
+  case 43: /* instruction_1_operand: TOKEN_INSTR_JLE  */
+#line 169 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_JLE; }
+#line 1482 "parserAssembler.c"
+    break;
+
+  case 44: /* instruction_1_operand: TOKEN_INSTR_JG  */
+#line 170 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_JG; }
+#line 1488 "parserAssembler.c"
+    break;
+
+  case 45: /* instruction_1_operand: TOKEN_INSTR_JGE  */
+#line 171 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_JGE; }
+#line 1494 "parserAssembler.c"
+    break;
+
+  case 46: /* instruction_1_operand: TOKEN_INSTR_JMP  */
+#line 172 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_JMP; }
+#line 1500 "parserAssembler.c"
+    break;
+
+  case 47: /* instruction_1_operand: TOKEN_INSTR_PUSHQ  */
+#line 173 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_PUSHQ; }
+#line 1506 "parserAssembler.c"
+    break;
+
+  case 48: /* instruction_1_operand: TOKEN_INSTR_POPQ  */
+#line 174 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_POPQ; }
+#line 1512 "parserAssembler.c"
+    break;
+
+  case 49: /* instruction_0_operand: TOKEN_INSTR_CQO  */
+#line 177 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_CQO; }
+#line 1518 "parserAssembler.c"
+    break;
+
+  case 50: /* instruction_0_operand: TOKEN_INSTR_RET  */
+#line 178 "parserAssembler.bison"
+                                           { (yyval.command) = OP_INSTR_RET; }
+#line 1524 "parserAssembler.c"
+    break;
+
+  case 51: /* instruction: instruction_2_operand operand TOKEN_OP_COMMA operand  */
+#line 181 "parserAssembler.bison"
+                                                                   { (yyval.instr) = instr_create((yyvsp[-3].command), (yyvsp[-2].operand), (yyvsp[0].operand)); }
+#line 1530 "parserAssembler.c"
+    break;
+
+  case 52: /* instruction: instruction_1_operand operand  */
+#line 182 "parserAssembler.bison"
+                                                                   { (yyval.instr) = instr_create((yyvsp[-1].command), (yyvsp[0].operand), 0); }
+#line 1536 "parserAssembler.c"
+    break;
+
+  case 53: /* instruction: instruction_0_operand  */
+#line 183 "parserAssembler.bison"
+                                                                   { (yyval.instr) = instr_create((yyvsp[0].command), 0, 0); }
+#line 1542 "parserAssembler.c"
+    break;
+
+  case 54: /* line: instruction TOKEN_OP_NEWLINE  */
+#line 186 "parserAssembler.bison"
+                                              { (yyval.line) = line_create(ASM_LINE_INSTRUCTION, 0, 0, (yyvsp[-1].instr)); }
+#line 1548 "parserAssembler.c"
+    break;
+
+  case 55: /* line: label TOKEN_OP_NEWLINE  */
+#line 187 "parserAssembler.bison"
+                                              { (yyval.line) = (yyvsp[-1].line); }
+#line 1554 "parserAssembler.c"
+    break;
+
+  case 56: /* line: directive TOKEN_OP_NEWLINE  */
+#line 188 "parserAssembler.bison"
+                                              { (yyval.line) = line_create(ASM_LINE_DIRECTIVE, 0, (yyvsp[-1].directive), 0); }
+#line 1560 "parserAssembler.c"
+    break;
+
+  case 57: /* line: TOKEN_OP_NEWLINE  */
+#line 189 "parserAssembler.bison"
+                                              { (yyval.line) = 0; }
+#line 1566 "parserAssembler.c"
+    break;
+
+  case 58: /* directive: TOKEN_DIRECTIVE_FILE literal_string  */
+#line 192 "parserAssembler.bison"
+                                                                              { (yyval.directive) = directive_create(DIR_FILE, (yyvsp[0].name), 0, 0); }
+#line 1572 "parserAssembler.c"
+    break;
+
+  case 59: /* directive: TOKEN_DIRECTIVE_SECTION TOKEN_DIRECTIVE_GNU_STACK TOKEN_OP_COMMA literal_string TOKEN_OP_COMMA TOKEN_DIRECTIVE_PROGBITS  */
+#line 194 "parserAssembler.bison"
+                                                                              { (yyval.directive) = directive_create(DIR_SECTION, (yyvsp[-2].name), 0, 0); }
+#line 1578 "parserAssembler.c"
+    break;
+
+  case 60: /* directive: TOKEN_DIRECTIVE_DATA  */
+#line 195 "parserAssembler.bison"
+                                                                              { (yyval.directive) = directive_create(DIR_DATA, 0, 0, 0); }
+#line 1584 "parserAssembler.c"
+    break;
+
+  case 61: /* directive: TOKEN_DIRECTIVE_GLOBAL identifier  */
+#line 196 "parserAssembler.bison"
+                                                                              { (yyval.directive) = directive_create(DIR_GLOBAL, (yyvsp[0].name), 0, 0); }
+#line 1590 "parserAssembler.c"
+    break;
+
+  case 62: /* directive: TOKEN_DIRECTIVE_TEXT  */
+#line 197 "parserAssembler.bison"
+                                                                              { (yyval.directive) = directive_create(DIR_TEXT, 0, 0, 0); }
+#line 1596 "parserAssembler.c"
+    break;
+
+  case 63: /* directive: TOKEN_DIRECTIVE_STRING literal_string  */
+#line 198 "parserAssembler.bison"
+                                                                              { (yyval.directive) = directive_create(DIR_STRING, 0, (yyvsp[0].name), 0); }
+#line 1602 "parserAssembler.c"
+    break;
+
+  case 64: /* directive: TOKEN_DIRECTIVE_QUAD literal_digit  */
+#line 199 "parserAssembler.bison"
+                                                                              { (yyval.directive) = directive_create(DIR_QUAD, 0, 0, (yyvsp[0].imm)); }
+#line 1608 "parserAssembler.c"
+    break;
+
+  case 65: /* line_list: line line_list  */
+#line 202 "parserAssembler.bison"
+                               { (yyval.line) = (yyvsp[-1].line); (yyvsp[-1].line)->next = (yyvsp[0].line); }
+#line 1614 "parserAssembler.c"
+    break;
+
+  case 66: /* line_list: line  */
+#line 203 "parserAssembler.bison"
+                               { (yyval.line) = (yyvsp[0].line); }
+#line 1620 "parserAssembler.c"
+    break;
+
+  case 67: /* literal_string: TOKEN_LITERAL_STRING  */
+#line 206 "parserAssembler.bison"
+                                       { (yyval.name) = strdup(beautifyString(yytext)); }
+#line 1626 "parserAssembler.c"
+    break;
+
+  case 68: /* literal_digit: TOKEN_DIGIT  */
+#line 209 "parserAssembler.bison"
+                            { (yyval.imm) = atoi(yytext); }
+#line 1632 "parserAssembler.c"
     break;
 
 
-#line 1234 "parserAssembler.c"
+#line 1636 "parserAssembler.c"
 
       default: break;
     }
@@ -1423,7 +1825,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 194 "parserAssembler.bison"
+#line 212 "parserAssembler.bison"
 
 
 int yyerror( char *str ) {
