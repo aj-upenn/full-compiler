@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdbool.h>
 
 #ifndef AST_ASSEMBLER_H
 #define AST_ASSEMBLER_H
@@ -70,6 +71,12 @@ typedef enum directive_kind {
     DIR_QUAD
 } directive_kind;
 
+typedef enum section_kind {
+    SECTION_TEXT,
+    SECTION_DATA,
+    SECTION_UNDEF
+} section_kind;
+
 struct asm_instr{
    /* used by all kinds of exprs */
    instr_kind kind;
@@ -97,6 +104,7 @@ struct asm_line {
 
 struct asm_program {
     struct asm_line *lines;
+    struct asm_symbol *symbols;
 };
 
 struct memory_ref {
@@ -116,6 +124,15 @@ struct asm_operand {
     };
 };
 
+struct asm_symbol {
+    char *name;
+    long address;                  // offset within section
+    enum section_kind kind;        // text or data
+    bool is_global;                 // 0 or 1
+    bool is_defined;
+    struct asm_symbol *next;           // linked list
+};
+
 struct asm_instr* instr_create( instr_kind kind, struct asm_operand* src, struct asm_operand* dst );
 struct asm_operand *operand_create_register(enum register_kind r);
 struct asm_operand *operand_create_immediate(long value);
@@ -124,6 +141,8 @@ struct asm_operand *operand_create_memory(long offset, enum register_kind base);
 struct asm_line* line_create( asm_line_kind kind, char *label_name, struct asm_directive* directive, struct asm_instr *instruction );
 struct asm_directive* directive_create(directive_kind kind, char* name, char* string, long value);
 struct asm_program* program_create(struct asm_line* line);
+struct asm_symbol* asm_symbol_create(char* name, long address, section_kind kind, bool is_global, bool is_defined);
+
 
 struct asm_program* program_print(struct asm_line* line);
 

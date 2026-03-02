@@ -5,6 +5,8 @@
 #include "scannerAssemblerFunc.h"
 #include "parserAssemblerFunc.h"
 #include "printerAssemblerFunc.h"
+#include "resolveAssemblerFunc.h"
+#include "helper.h"
 
 extern FILE *yyin;
 // extern struct decl * program_pointer;
@@ -20,6 +22,7 @@ int main(int argc, char *argv[]){
    if(!strcmp(flag, "-scan")){ scanFile(false); }
    else if(!strcmp(flag, "-parse")){ scanFile(true); yyin = fopen(filename, "r"); parseFile();}
    else if(!strcmp(flag, "-print")){ scanFile(true); yyin = fopen(filename, "r"); printFile(); }
+   else if(!strcmp(flag, "-resolve")){ scanFile(true); yyin = fopen(filename, "r"); resolveFile(); }
 
 
    return 0;

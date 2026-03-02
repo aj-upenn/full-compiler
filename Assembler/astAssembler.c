@@ -66,3 +66,19 @@ struct asm_program* program_create(struct asm_line* line) {
     p->lines = line;
     return p;
 }
+
+struct asm_symbol* asm_symbol_create(char* name, long address, section_kind kind, bool is_global, bool is_defined)
+{
+    struct asm_symbol* s = malloc(sizeof(*s));
+
+    s->name = name ? strdup(name) : 0;
+    s->address = address;
+    s->kind = kind;
+    s->is_global = is_global;
+    s->is_defined = is_defined;
+    s->next = 0;
+
+    return s;
+}
+
+
