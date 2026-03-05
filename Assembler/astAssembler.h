@@ -73,7 +73,14 @@ typedef enum directive_kind {
 
 typedef enum section_kind {
     SECTION_TEXT,
+    SECTION_SYMTAB,
+    SECTION_STRTAB,
+    SECTION_SHSTRTAB,
+    SECTION_RELATEXT,
     SECTION_DATA,
+    SECTION_BSS,
+    SECTION_GNUSTACK,
+    SECTION_HEADER,
     SECTION_UNDEF
 } section_kind;
 
