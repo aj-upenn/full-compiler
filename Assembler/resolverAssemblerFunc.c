@@ -8,11 +8,12 @@ extern int yylex_destroy();
 extern FILE *yyin;
 extern struct asm_program * program_pointer;
 section_kind current_section;
-long text_address = 0;
-long data_address = 0;
+long text_address;
+long data_address;
 
 void resolveFile()
 {
+    text_address = data_address = 0;
     if(yyparse() == 0){ programResolve(); fclose(yyin); yylex_destroy(); }
     else{ printf("Parse Failed!\n"); fclose(yyin); yylex_destroy(); exit(1); } 
 }
