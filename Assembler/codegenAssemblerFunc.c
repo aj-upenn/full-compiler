@@ -26,15 +26,15 @@ void codeGen() {
     struct binary_section *symtab = binarySectionCreate(20000, SECTION_SYMTAB); // UPDATE AT END
     setSymTab(symtab);
 
-    struct binary_section *data = binarySectionCreate(20000, SECTION_DATA); // UPDATE AT END
-    setData(data);
+    //struct binary_section *data = binarySectionCreate(20000, SECTION_DATA); // UPDATE AT END
+    //setData(data);
 
     struct binary_section *bss = binarySectionCreate(64, SECTION_BSS); // UPDATE AT END
     
 
     writeBinary(fp, header);
     writeBinary(fp, instructions);
-    writeBinary(fp, data);
+    //writeBinary(fp, data);
     writeBinary(fp, bss);
     writeBinary(fp, symtab);
     writeBinary(fp, shstrtab);
@@ -137,7 +137,7 @@ void setInstructions(struct binary_section *s)
                 uint64_t mask = 0xff;
                 for(size_t i = 0; i < aOpCode->size_bytes; i++)
                 {
-                    uint8_t byte = mask & aOpCode->data;
+                    uint8_t byte = (mask & aOpCode->data) >> 8*i;
                     emitbyte(s, byte);
                     mask = mask << 8;
                 }
@@ -261,6 +261,12 @@ CALL	E8 rel32
 CQO	48 99
 RET	C3
 */
+
+uint8_t getRM(modrm_mod modrm_mod, int reg1, int reg2)
+{
+    return (modrm_mod << 6) | (reg1 << 3) | (reg2);
+}
+
 struct op_code* instructionOpCode(struct asm_instr instr)
 {
     struct op_code* aOpCode = malloc(sizeof(struct op_code));
@@ -268,8 +274,20 @@ struct op_code* instructionOpCode(struct asm_instr instr)
     switch(instr.kind) {
 
         case OP_INSTR_MOVQ:
-            aOpCode->size_bytes = 2;
-            aOpCode->data = 0x4889;
+            if (is_reg(instr.src) && is_reg(instr.dest)) {
+                    int src = registerNumber(instr.src->reg);
+                    int dest = registerNumber(instr.dest->reg);
+
+                    aOpCode->size_bytes = 3;  // REX + opcode + modrm
+                    aOpCode->data = (0x4889) | getRM(MOD_REGISTER, src, dest) << 16;
+
+            }
+            else if (is_imm(instr.src) && is_reg(instr.dest)) {
+
+            }
+            else if (is_mem(instr.src) || is_mem(instr.dest) || is_label(instr.src) || is_label(instr.dest)) {
+
+            }
             break;
 
         case OP_INSTR_LEAQ:
@@ -314,13 +332,12 @@ struct op_code* instructionOpCode(struct asm_instr instr)
 
         case OP_INSTR_PUSHQ:
             aOpCode->size_bytes = 1;
-            aOpCode->data = 0x50;
-            //aOpCode->data += registerNumber(instr.dest->reg);
+            aOpCode->data = 0x50 + registerNumber(instr.src->reg);
             break;
 
         case OP_INSTR_POPQ:
             aOpCode->size_bytes = 1;
-            aOpCode->data = 0x58;
+            aOpCode->data = 0x58 + registerNumber(instr.src->reg);
             break;
 
         case OP_INSTR_IMULQ:

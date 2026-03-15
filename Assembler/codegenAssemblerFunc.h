@@ -1,9 +1,18 @@
 #include "resolverAssemblerFunc.h"
 #include "astAssembler.h"
+#include "helper.h"
 #include <stdint.h>
 #include <stdio.h>
 
 extern long text_address;
+
+typedef enum {
+    MOD_MEM_NO_DISP = 0b00,  // memory operand, no displacement
+    MOD_MEM_DISP8   = 0b01,  // memory operand with 8-bit displacement
+    MOD_MEM_DISP32  = 0b10,  // memory operand with 32-bit displacement
+    MOD_REGISTER    = 0b11   // register operand (r/m field refers to a register)
+} modrm_mod;
+
 struct binary_section {
     size_t size;
     int section_offset;
@@ -83,5 +92,6 @@ void setInstructions(struct binary_section *s);
 void setSymTab(struct binary_section *s);
 void setShstrtab(struct binary_section *s);
 void setData(struct binary_section *s);
+uint8_t getRM(modrm_mod modrm_mod, int reg1, int reg2);
 
 void writeBinary(FILE*fp, struct binary_section *s);
