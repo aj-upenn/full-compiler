@@ -118,7 +118,14 @@ void instructionResolve(struct asm_instr* instr)
                 text_address += 3;
             }
             else if (is_imm(src) && is_reg(dst)) {
-                text_address += 7;
+                if(abs((int)src->immediate) >= 128) {
+                    text_address += 7;
+                }
+                else
+                {
+                    text_address += 4;
+                }
+                    
             }
             else if (is_mem(src) || is_mem(dst) || is_label(src) || is_label(dst)) {
                 text_address += 7;

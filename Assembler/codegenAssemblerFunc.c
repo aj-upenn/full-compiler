@@ -1,6 +1,7 @@
 #include "codegenAssemblerFunc.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 extern struct asm_program * program_pointer;
 //extern section_kind current_section;
@@ -262,9 +263,15 @@ CQO	48 99
 RET	C3
 */
 
-uint8_t getRM(modrm_mod modrm_mod, int reg1, int reg2)
+uint8_t getRM(modrm_mod modrm_mod, int num1, int num2)
 {
-    return (modrm_mod << 6) | (reg1 << 3) | (reg2);
+    //if(modrm_mod == MOD_REGISTER){
+        return (modrm_mod << 6) | (num1 << 3) | (num2);
+    //}
+    //else if (modrm_mod == MOD_MEM_DISP32){
+    //    return (modrm_mod << 6) | (num1 << 3) | (num2);
+   // }
+   // return 0;
 }
 
 struct op_code* instructionOpCode(struct asm_instr instr)
@@ -279,7 +286,7 @@ struct op_code* instructionOpCode(struct asm_instr instr)
                     int dest = registerNumber(instr.dest->reg);
 
                     aOpCode->size_bytes = 3;  // REX + opcode + modrm
-                    aOpCode->data = (0x4889) | getRM(MOD_REGISTER, src, dest) << 16;
+                    aOpCode->data = __builtin_bswap16(0x4889) | getRM(MOD_REGISTER, src, dest) << 16;
 
             }
             else if (is_imm(instr.src) && is_reg(instr.dest)) {
@@ -301,10 +308,37 @@ struct op_code* instructionOpCode(struct asm_instr instr)
             break;
 
         case OP_INSTR_SUBQ:
-            aOpCode->size_bytes = 2;
-            aOpCode->data = 0x4829;
+            if (is_reg(instr.src) && is_reg(instr.dest)) {
+                aOpCode->size_bytes = 3;
+            }
+            else if (is_imm(instr.src) && is_reg(instr.dest)) {
+                int dest = registerNumber(instr.dest->reg);
+                if(abs((int)instr.src->immediate) >= 128) {
+                    aOpCode->size_bytes = 7;
+                    aOpCode->data = __builtin_bswap16(0x4881) | getRM(MOD_REGISTER, 0b101, dest) << 16 ;
+                }
+                else{
+                    aOpCode->size_bytes = 4;
+                    aOpCode->data = __builtin_bswap16(0x4883) | getRM(MOD_REGISTER, 0b101, dest) << 16 ;
+                }
+                aOpCode->data |= instr.src->immediate << 24;
+                                
+                
+            }
+            else if (is_mem(instr.src) || is_mem(instr.dest) || is_label(instr.src) || is_label(instr.dest)) {
+                int dest = registerNumber(instr.dest->reg);
+                if(abs((int)instr.src->immediate) >= 128) {
+                    aOpCode->size_bytes = 7;
+                    aOpCode->data = __builtin_bswap16(0x4881) | getRM(MOD_MEM_DISP32, 0b101, dest) << 16 ;
+                }
+                else{
+                    aOpCode->size_bytes = 4;
+                    aOpCode->data = __builtin_bswap16(0x48c7) | getRM(MOD_MEM_DISP8, 0b101, dest) << 16 ;
+                }
+                aOpCode->data |= instr.src->immediate << 24;
+                aOpCode->size_bytes = 7;
+            }
             break;
-
         case OP_INSTR_CMPQ:
             aOpCode->size_bytes = 2;
             aOpCode->data = 0x4839;
@@ -331,12 +365,21 @@ struct op_code* instructionOpCode(struct asm_instr instr)
             break;
 
         case OP_INSTR_PUSHQ:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0x50 + registerNumber(instr.src->reg);
+            int src = registerNumber(instr.src->reg);
+            if(src <= 7)
+            {
+                aOpCode->size_bytes = 1;
+                aOpCode->data = 0x50 + registerNumber(instr.src->reg);
+            }
+            else
+            {
+                aOpCode->size_bytes = 2;
+                aOpCode->data = 0x41 | ((0x48 + registerNumber(instr.src->reg)) << 8);
+            }
             break;
 
         case OP_INSTR_POPQ:
-            aOpCode->size_bytes = 1;
+            aOpCode->size_bytes = 2;
             aOpCode->data = 0x58 + registerNumber(instr.src->reg);
             break;
 
