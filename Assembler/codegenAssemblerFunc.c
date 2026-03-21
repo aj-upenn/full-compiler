@@ -1,4 +1,5 @@
 #include "codegenAssemblerFunc.h"
+#include "printerAssemblerFunc.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -46,11 +47,11 @@ void codeGen() {
 void setData(struct binary_section *s)
 {
     struct asm_symbol * symb = program_pointer->symbols;
-    while(symb != 0)
+    /* while(symb != 0)
     {
         emitbyte(s, 0);
         symb = symb->next;
-    }
+    }*/
 }
 
 void setShstrtab(struct binary_section *s)
@@ -231,7 +232,7 @@ int registerNumber(register_kind reg)
         case OP_R13: return 13;
         case OP_R14: return 14;
         case OP_R15: return 15;
-        default: return -1;
+        default: printf("UNKNOWN REGISTER\n"); exit(1);
     }
 }
 /*
@@ -266,7 +267,9 @@ RET	C3
 uint8_t getRM(modrm_mod modrm_mod, int num1, int num2)
 {
     //if(modrm_mod == MOD_REGISTER){
-        return (modrm_mod << 6) | (num1 << 3) | (num2);
+    if(num1 > 8) { num1 -= 8; }
+    if(num2 > 8) { num2 -= 8; }
+    return (modrm_mod << 6) | (num1 << 3) | (num2);
     //}
     //else if (modrm_mod == MOD_MEM_DISP32){
     //    return (modrm_mod << 6) | (num1 << 3) | (num2);
@@ -282,18 +285,45 @@ struct op_code* instructionOpCode(struct asm_instr instr)
 
         case OP_INSTR_MOVQ:
             if (is_reg(instr.src) && is_reg(instr.dest)) {
-                    int src = registerNumber(instr.src->reg);
-                    int dest = registerNumber(instr.dest->reg);
+                int src = registerNumber(instr.src->reg);
+                int dest = registerNumber(instr.dest->memory.base);
 
-                    aOpCode->size_bytes = 3;  // REX + opcode + modrm
-                    aOpCode->data = __builtin_bswap16(0x4889) | getRM(MOD_REGISTER, src, dest) << 16;
+                aOpCode->size_bytes = 3;  // REX + opcode + modrm
+                aOpCode->data = __builtin_bswap16(0x4889) | getRM(MOD_REGISTER, src, dest) << 16;
 
             }
             else if (is_imm(instr.src) && is_reg(instr.dest)) {
+                long imm = instr.src->immediate;
+                int dest = registerNumber(instr.dest->reg);
+
+                aOpCode->size_bytes = 7;
+                aOpCode->data = (uint32_t) __builtin_bswap16(0x49c7) |  (uint32_t) getRM(MOD_REGISTER, 0b000, dest)  << 16;
+
+                aOpCode->data |= imm << 24;
+            }
+            else if(is_imm(instr.src) && is_mem(instr.dest)){
+                long imm = instr.src->immediate;
+                int dest = registerNumber(instr.dest->memory.base);
+
+                aOpCode->size_bytes = 8;
+                if(instr.dest->memory.offset == -8){
+                    //aOpCode->data |= 0xf8;
+                    aOpCode->data = (uint32_t) __builtin_bswap16(0x48c7) |  (uint32_t) getRM(MOD_MEM_DISP8, 0b000, dest)  << 16 | (uint32_t) 0xf8 << 24;
+                }
+                else {
+                    printf("MUST IMPLEMENT 1\n");
+                }
+
+                aOpCode->data |= imm << 32;
 
             }
             else if (is_mem(instr.src) || is_mem(instr.dest) || is_label(instr.src) || is_label(instr.dest)) {
+                // int imm = instr.src->immediate;
+                // int dest = registerNumber(instr.dest->reg);
 
+                // aOpCode->size_bytes = 7;
+                // aOpCode->data = __builtin_bswap16(0x48c7) |  getRM(MOD_MEM_DISP8, 0b101, dest)  << 16;
+                // aOpCode->data |= instr.src->immediate << 24;
             }
             break;
 
