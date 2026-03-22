@@ -35,8 +35,32 @@ struct binary_symbol {
     uint64_t st_size;   // 8 bytes
 };
 
+struct section_description {
+    uint32_t sh_name;
+    uint32_t sh_type;
+    uint64_t sh_flags;
+    uint64_t sh_addr;
+    uint64_t sh_offset;
+    uint64_t sh_size;
+    uint32_t sh_link;
+    uint32_t sh_info;
+    uint64_t sh_addralign;
+    uint64_t sh_entsize;
+};
+
 
 struct binary_symbol* createBinarySymbol(uint32_t st_name, uint8_t  st_info, uint8_t  st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size);
+
+struct section_description* createBinarySectionDescription(uint32_t sh_name,
+    uint32_t sh_type,
+    uint64_t sh_flags,
+    uint64_t sh_addr,
+    uint64_t sh_offset,
+    uint64_t sh_size,
+    uint32_t sh_link,
+    uint32_t sh_info,
+    uint64_t sh_addralign,
+    uint64_t sh_entsize);
 
 int registerNumber(register_kind reg);
 /*
@@ -104,8 +128,9 @@ void setHeader(struct binary_section *s, uint64_t offset_to_header);
 void setInstructions(struct binary_section *s);
 void setSymTab(struct binary_section *s);
 void setShstrtab(struct binary_section *s);
-void setData(struct binary_section *s);
+void setDataStrtab(struct binary_section *data, struct binary_section *strtab);
 uint8_t getRM(modrm_mod modrm_mod, int reg1, int reg2);
-void setStrtab(struct binary_section *s);
+void padto16(struct binary_section *s);
+void setSectionDescriptions(struct binary_section *s);
 
 void writeBinary(FILE*fp, struct binary_section *s);
