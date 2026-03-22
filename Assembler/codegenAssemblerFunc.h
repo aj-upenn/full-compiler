@@ -26,6 +26,18 @@ struct op_code {
     uint64_t data_extra;
 };
 
+struct binary_symbol {
+    uint32_t st_name;   // 4 bytes
+    uint8_t  st_info;   // 1 byte
+    uint8_t  st_other;  // 1 byte
+    uint16_t st_shndx;  // 2 bytes
+    uint64_t st_value;  // 8 bytes
+    uint64_t st_size;   // 8 bytes
+};
+
+
+struct binary_symbol* createBinarySymbol(uint32_t st_name, uint8_t  st_info, uint8_t  st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size);
+
 int registerNumber(register_kind reg);
 /*
 Register Encoding
@@ -42,7 +54,7 @@ Register	Number	Opcode	Machine Code
 */
 
 
-struct op_code* instructionOpCode(struct asm_instr instr);
+struct op_code* instructionOpCode(struct asm_instr* instr);
 /*
 MOVQ r/m64, r64	  REX.W + 89 /r	    48 89	move reg → r/m
 MOVQ r64, r/m64	  REX.W + 8B /r	    48 8B	move r/m → reg
@@ -86,6 +98,7 @@ void codeGen();
 void emitbyte(struct binary_section *s, char byte);
 void emit8(struct binary_section *s, uint64_t value);
 void emit4(struct binary_section *s, uint64_t value);
+void emit2(struct binary_section *s, uint64_t value);
 struct binary_section* binarySectionCreate(int section_size, section_kind kind);
 void setHeader(struct binary_section *s, uint64_t offset_to_header);
 void setInstructions(struct binary_section *s);
@@ -93,5 +106,6 @@ void setSymTab(struct binary_section *s);
 void setShstrtab(struct binary_section *s);
 void setData(struct binary_section *s);
 uint8_t getRM(modrm_mod modrm_mod, int reg1, int reg2);
+void setStrtab(struct binary_section *s);
 
 void writeBinary(FILE*fp, struct binary_section *s);

@@ -1,5 +1,6 @@
 #include "resolverAssemblerFunc.h"
 #include "helper.h"
+#include "codegenAssemblerFunc.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -93,89 +94,162 @@ void directiveResolve(struct asm_directive* dir)
 
 void instructionResolve(struct asm_instr* instr)
 {
-    struct asm_operand *src = instr->src;
-    struct asm_operand *dst = instr->dest;
+    // struct asm_operand *src = instr->src;
+    // struct asm_operand *dst = instr->dest;
 
     switch(instr->kind) {
         case OP_INSTR_MOVQ:
-            if (is_reg(src) && is_reg(dst)) {
-                text_address += 3;
+            if (is_reg(instr->src) && is_reg(instr->dest)) {
+                text_address += 3;  // REX + opcode + modrm
             }
-            else if (is_imm(src) && is_reg(dst)) {
-                text_address += 10;
+            else if (is_imm(instr->src) && is_reg(instr->dest)) {
+                text_address += 7;
             }
-            else if (is_mem(src) || is_mem(dst) || is_label(src) || is_label(dst)) {
-                text_address += 7;   
+            else if(is_imm(instr->src) && is_mem(instr->dest)){
+
+
+                text_address += 8;
+                if(instr->dest->memory.offset == -8){
+                }
+                else {
+                    printf("MUST IMPLEMENT 1\n");
+                }
+
+            }
+            else if (is_reg(instr->src) && is_mem(instr->dest)) {
+                text_address += 4;
+            }
+            else if (is_mem(instr->src) && is_reg(instr->dest)) {
+                text_address += 4;
             }
             break;
+
         case OP_INSTR_LEAQ:
-            text_address += 7;
+            text_address += 2;
             break;
+
         case OP_INSTR_ADDQ:
+            text_address += 2;
+            break;
+
         case OP_INSTR_SUBQ:
-        case OP_INSTR_CMPQ:
-            if (is_reg(src) && is_reg(dst)) {
+            if (is_reg(instr->src) && is_reg(instr->dest)) {
                 text_address += 3;
             }
-            else if (is_imm(src) && is_reg(dst)) {
-                if(abs((int)src->immediate) >= 128) {
+            else if (is_imm(instr->src) && is_reg(instr->dest)) {
+                if(abs((int)instr->src->immediate) >= 128) {
                     text_address += 7;
                 }
-                else
-                {
+                else{
+                    text_address += 4;
+
+                }
+                                
+                
+            }
+            else if (is_mem(instr->src) || is_mem(instr->dest) || is_label(instr->src) || is_label(instr->dest)) {
+                if(abs((int)instr->src->immediate) >= 128) {
+                    text_address += 7;
+                }
+                else{
                     text_address += 4;
                 }
-                    
-            }
-            else if (is_mem(src) || is_mem(dst) || is_label(src) || is_label(dst)) {
                 text_address += 7;
             }
+
             break;
+        case OP_INSTR_CMPQ:
+            text_address += 2;
+            break;
+
         case OP_INSTR_IDIVQ:
-            text_address += 3;
+            text_address += 2;
             break;
+
         case OP_INSTR_NEGQ:
+            text_address += 2;
+            break;
+
         case OP_INSTR_INCQ:
+            text_address += 2;
+            break;
+
         case OP_INSTR_DECQ:
-        case OP_INSTR_IMULQ:
-            if (is_reg(instr->src)) {
-            text_address += 3;
-            } 
-            else {
-                text_address += 7;
-            }
+            text_address += 2;
             break;
+
         case OP_INSTR_PUSHQ:
-        case OP_INSTR_POPQ:
-             if (is_reg(instr->src)) {
+        {
+            int src = registerNumber(instr->src->reg);
+            if(src <= 7)
+            {
+                text_address += 1;
+            }
+            else
+            {
                 text_address += 2;
-            } 
-            else {
-                text_address += 7;
             }
             break;
+        }
+        case OP_INSTR_POPQ:
+        {
+            int src = registerNumber(instr->src->reg);
+            if(src <= 7)
+            {
+                text_address += 1;
+            }
+            else
+            {
+                text_address += 2;
+            }
+            break;
+        }
+        case OP_INSTR_IMULQ:
+            text_address += 2;
+
+            break;
+
         case OP_INSTR_JE:
+            text_address += 1;
+            break;
+
         case OP_INSTR_JNE:
+            text_address += 1;
+            break;
+
         case OP_INSTR_JL:
+            text_address += 1;
+            break;
+
         case OP_INSTR_JG:
+            text_address += 1;
+            break;
+
         case OP_INSTR_JLE:
+            text_address += 1;
+            break;
+
         case OP_INSTR_JGE:
-            text_address += 6;
+            text_address += 1;
             break;
+
         case OP_INSTR_JMP:
-            text_address += 5;
+            text_address += 1;
             break;
+
         case OP_INSTR_CALL:
-            text_address += 5;
+            text_address += 1;
             break;
+
         case OP_INSTR_CQO:
             text_address += 2;
             break;
+
         case OP_INSTR_RET:
             text_address += 1;
             break;
+
         default:
-            break;
     }
 }
 

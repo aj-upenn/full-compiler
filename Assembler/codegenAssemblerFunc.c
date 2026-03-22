@@ -7,6 +7,7 @@
 extern struct asm_program * program_pointer;
 //extern section_kind current_section;
 //extern long text_address = 0;
+const unsigned int CURRENT_STRTAB_LEN = 24;
 
 void codeGen() {
     struct binary_section *header = binarySectionCreate(64, SECTION_HEADER);
@@ -22,36 +23,80 @@ void codeGen() {
     }
     
     int shstrtab_length = 64;
+
+    struct binary_section *strtab = binarySectionCreate(CURRENT_STRTAB_LEN, SECTION_SHSTRTAB);
+    setStrtab(strtab);
+
     struct binary_section *shstrtab = binarySectionCreate(shstrtab_length, SECTION_SHSTRTAB);
     setShstrtab(shstrtab);
 
     struct binary_section *symtab = binarySectionCreate(20000, SECTION_SYMTAB); // UPDATE AT END
     setSymTab(symtab);
 
-    //struct binary_section *data = binarySectionCreate(20000, SECTION_DATA); // UPDATE AT END
-    //setData(data);
+    struct binary_section *data = binarySectionCreate(3*sizeof(struct binary_symbol), SECTION_DATA); // UPDATE AT END
+    setData(data);
 
-    struct binary_section *bss = binarySectionCreate(64, SECTION_BSS); // UPDATE AT END
+    //struct binary_section *bss = binarySectionCreate(64, SECTION_BSS); // UPDATE AT END
     
 
     writeBinary(fp, header);
     writeBinary(fp, instructions);
-    //writeBinary(fp, data);
-    writeBinary(fp, bss);
-    writeBinary(fp, symtab);
-    writeBinary(fp, shstrtab);
+    writeBinary(fp, data);
+    writeBinary(fp, strtab);
+    //writeBinary(fp, symtab);
+    //writeBinary(fp, shstrtab);
 
     fclose(fp);
 }
 
+void emitSymbol(struct binary_section *s, struct binary_symbol * symb)
+{
+    emit4(s, symb->st_name);
+    emitbyte(s, symb->st_info);
+    emitbyte(s, symb->st_other);
+    emit2(s, symb->st_shndx);
+    emit8(s, symb->st_value);
+    emit8(s, symb->st_size);
+}
+
+void setStrtab(struct binary_section *s)
+{
+    char tab[CURRENT_STRTAB_LEN];
+    int location = 0;
+    tab[location++] = 0;
+    strcpy(&tab[1], program_pointer->lines->directive->name);
+    location += strlen(program_pointer->lines->directive->name) + 1;
+    for(unsigned int i = 0; i < CURRENT_STRTAB_LEN; i++)
+    {
+        emitbyte(s, tab[i+1]);
+    }
+
+    struct asm_symbol * symb = program_pointer->symbols;
+    //emitbyte(s, tab[location++]);
+}
+
 void setData(struct binary_section *s)
 {
+    struct binary_symbol* first =  createBinarySymbol(0,0,0,0,0,0);
+    emitSymbol(s, first);
+    
+    struct binary_symbol* b =  createBinarySymbol(1,0x04,0,0xfff1,0,0);
+    emitSymbol(s, b);
+
     struct asm_symbol * symb = program_pointer->symbols;
-    /* while(symb != 0)
+
+    uint32_t strtab_index = 1; // starts at 1 (first byte is a 0)
+
+    strtab_index += strlen(program_pointer->lines->directive->name) + 1;
+
+    while(symb != 0)
     {
-        emitbyte(s, 0);
+        
+        // b =  createBinarySymbol(20/*strtab_index*/,0x1000,0x0100,0,0,0);
+        b =  createBinarySymbol(strtab_index,0x10,0,0x01,0,0);
+        emitSymbol(s, b);
         symb = symb->next;
-    }*/
+    }
 }
 
 void setShstrtab(struct binary_section *s)
@@ -126,6 +171,31 @@ void setSymTab(struct binary_section *s)
 }
 
 
+void padto16(struct binary_section *s)
+{
+    while(s->size % 16 != 0)
+    {
+        emitbyte(s, 0);
+        s->size += 1;
+    }
+}
+
+
+struct binary_symbol* createBinarySymbol(uint32_t st_name, uint8_t  st_info, uint8_t  st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size)
+{
+    struct binary_symbol* sym = (struct binary_symbol*) malloc(sizeof(struct binary_symbol));
+    if (!sym) return NULL;
+
+    sym->st_name  = st_name;
+    sym->st_info  = st_info;
+    sym->st_other = st_other;
+    sym->st_shndx = st_shndx;
+    sym->st_value = st_value;
+    sym->st_size  = st_size;
+
+    return sym;
+}
+
 void setInstructions(struct binary_section *s)
 {
     if(!program_pointer) return;
@@ -133,7 +203,7 @@ void setInstructions(struct binary_section *s)
     struct asm_line *line = program_pointer->lines;
     while(line) {
         if(line->kind == ASM_LINE_INSTRUCTION){
-            struct op_code* aOpCode = instructionOpCode(*line->instruction);
+            struct op_code* aOpCode = instructionOpCode(line->instruction);
             if(!aOpCode) { printf("Skipping instruction\n"); }
             if(aOpCode->size_bytes <= 8) {
                 uint64_t mask = 0xff;
@@ -147,9 +217,10 @@ void setInstructions(struct binary_section *s)
             else {
 
             }
-        } 
+        }
         line = line->next;
     }
+    padto16(s);
 }
 
 void setHeader(struct binary_section *s, uint64_t offset_to_header)
@@ -180,10 +251,17 @@ void emitbyte(struct binary_section *s, char byte)
     s->section_offset++;
 }
 
+void emit2(struct binary_section *s, uint64_t value)
+{
+    for (int i = 0; i < 2; i++) {
+        emitbyte(s, (value >> (8 * i)) & 0xFF);
+    }
+}
+
 void emit4(struct binary_section *s, uint64_t value)
 {
     for (int i = 0; i < 4; i++) {
-        emitbyte(s, (value >> (4 * i)) & 0xFF);
+        emitbyte(s, (value >> (8 * i)) & 0xFF);
     }
 }
 
@@ -271,36 +349,35 @@ uint8_t getRM(modrm_mod modrm_mod, int num1, int num2)
     return (modrm_mod << 6) | (num1 << 3) | (num2);
 }
 
-struct op_code* instructionOpCode(struct asm_instr instr)
+struct op_code* instructionOpCode(struct asm_instr* instr)
 {
     struct op_code* aOpCode = malloc(sizeof(struct op_code));
 
-    switch(instr.kind) {
-
+    switch(instr->kind) {
         case OP_INSTR_MOVQ:
-            if (is_reg(instr.src) && is_reg(instr.dest)) {
-                int src = registerNumber(instr.src->reg);
-                int dest = registerNumber(instr.dest->reg);
+            if (is_reg(instr->src) && is_reg(instr->dest)) {
+                int src = registerNumber(instr->src->reg);
+                int dest = registerNumber(instr->dest->reg);
 
                 aOpCode->size_bytes = 3;  // REX + opcode + modrm
                 aOpCode->data = __builtin_bswap16(0x4889) | getRM(MOD_REGISTER, src, dest) << 16;
 
             }
-            else if (is_imm(instr.src) && is_reg(instr.dest)) {
-                long imm = instr.src->immediate;
-                int dest = registerNumber(instr.dest->reg);
+            else if (is_imm(instr->src) && is_reg(instr->dest)) {
+                long imm = instr->src->immediate;
+                int dest = registerNumber(instr->dest->reg);
 
                 aOpCode->size_bytes = 7;
                 aOpCode->data = (uint32_t) __builtin_bswap16(0x49c7) |  (uint32_t) getRM(MOD_REGISTER, 0b000, dest)  << 16;
 
                 aOpCode->data |= imm << 24;
             }
-            else if(is_imm(instr.src) && is_mem(instr.dest)){
-                long imm = instr.src->immediate;
-                int dest = registerNumber(instr.dest->memory.base);
+            else if(is_imm(instr->src) && is_mem(instr->dest)){
+                long imm = instr->src->immediate;
+                int dest = registerNumber(instr->dest->memory.base);
 
                 aOpCode->size_bytes = 8;
-                if(instr.dest->memory.offset == -8){
+                if(instr->dest->memory.offset == -8){
                     aOpCode->data = (uint32_t) __builtin_bswap16(0x48c7) |  (uint32_t) getRM(MOD_MEM_DISP8, 0b000, dest)  << 16 | (uint32_t) 0xf8 << 24;
                 }
                 else {
@@ -310,9 +387,16 @@ struct op_code* instructionOpCode(struct asm_instr instr)
                 aOpCode->data |= imm << 32;
 
             }
-            else if (is_reg(instr.src) && is_mem(instr.dest)) {
-                int src = registerNumber(instr.src->reg);
-                int dest = registerNumber(instr.dest->memory.base);
+            else if (is_reg(instr->src) && is_mem(instr->dest)) {
+                //int src = registerNumber(instr->src->reg);
+                int dest = registerNumber(instr->dest->memory.base);
+
+                aOpCode->size_bytes = 4;
+                aOpCode->data = (uint32_t) __builtin_bswap16(0x4c89) | (uint32_t) getRM(MOD_MEM_DISP8, 0b101, dest)  << 16 | (uint32_t) 0xf8 << 24;
+            }
+            else if (is_mem(instr->src) && is_reg(instr->dest)) {
+                //int src = registerNumber(instr->dest->memory.base);
+                int dest = registerNumber(instr->dest->reg);
 
                 aOpCode->size_bytes = 4;
                 aOpCode->data = (uint32_t) __builtin_bswap16(0x4c89) | (uint32_t) getRM(MOD_MEM_DISP8, 0b101, dest)  << 16 | (uint32_t) 0xf8 << 24;
@@ -330,13 +414,13 @@ struct op_code* instructionOpCode(struct asm_instr instr)
             break;
 
         case OP_INSTR_SUBQ:
-            if (is_reg(instr.src) && is_reg(instr.dest)) {
+            if (is_reg(instr->src) && is_reg(instr->dest)) {
                 aOpCode->size_bytes = 3;
             }
-            else if (is_imm(instr.src) && is_reg(instr.dest)) {
-                int dest = registerNumber(instr.dest->reg);
+            else if (is_imm(instr->src) && is_reg(instr->dest)) {
+                int dest = registerNumber(instr->dest->reg);
                 
-                if(abs((int)instr.src->immediate) >= 128) {
+                if(abs((int)instr->src->immediate) >= 128) {
                     aOpCode->size_bytes = 7;
                     aOpCode->data = __builtin_bswap16(0x4881) | getRM(MOD_REGISTER, 0b101, dest) << 16 ;
                 }
@@ -344,13 +428,13 @@ struct op_code* instructionOpCode(struct asm_instr instr)
                     aOpCode->size_bytes = 4;
                     aOpCode->data = __builtin_bswap16(0x4883) | getRM(MOD_REGISTER, 0b101, dest) << 16 ;
                 }
-                aOpCode->data |= instr.src->immediate << 24;
+                aOpCode->data |= instr->src->immediate << 24;
                                 
                 
             }
-            else if (is_mem(instr.src) || is_mem(instr.dest) || is_label(instr.src) || is_label(instr.dest)) {
-                int dest = registerNumber(instr.dest->reg);
-                if(abs((int)instr.src->immediate) >= 128) {
+            else if (is_mem(instr->src) || is_mem(instr->dest) || is_label(instr->src) || is_label(instr->dest)) {
+                int dest = registerNumber(instr->dest->reg);
+                if(abs((int)instr->src->immediate) >= 128) {
                     aOpCode->size_bytes = 7;
                     aOpCode->data = __builtin_bswap16(0x4881) | getRM(MOD_MEM_DISP32, 0b101, dest) << 16 ;
                 }
@@ -358,7 +442,7 @@ struct op_code* instructionOpCode(struct asm_instr instr)
                     aOpCode->size_bytes = 4;
                     aOpCode->data = __builtin_bswap16(0x48c7) | getRM(MOD_MEM_DISP8, 0b101, dest) << 16 ;
                 }
-                aOpCode->data |= instr.src->immediate << 24;
+                aOpCode->data |= instr->src->immediate << 24;
                 aOpCode->size_bytes = 7;
             }
 
@@ -390,31 +474,31 @@ struct op_code* instructionOpCode(struct asm_instr instr)
 
         case OP_INSTR_PUSHQ:
         {
-            int src = registerNumber(instr.src->reg);
+            int src = registerNumber(instr->src->reg);
             if(src <= 7)
             {
                 aOpCode->size_bytes = 1;
-                aOpCode->data = 0x50 + registerNumber(instr.src->reg);
+                aOpCode->data = 0x50 + registerNumber(instr->src->reg);
             }
             else
             {
                 aOpCode->size_bytes = 2;
-                aOpCode->data = 0x41 | ((0x48 + registerNumber(instr.src->reg)) << 8);
+                aOpCode->data = 0x41 | ((0x48 + registerNumber(instr->src->reg)) << 8);
             }
             break;
         }
         case OP_INSTR_POPQ:
         {
-            int src = registerNumber(instr.src->reg);
+            int src = registerNumber(instr->src->reg);
             if(src <= 7)
             {
                 aOpCode->size_bytes = 1;
-                aOpCode->data = 0x58 + registerNumber(instr.src->reg);
+                aOpCode->data = 0x58 + registerNumber(instr->src->reg);
             }
             else
             {
                 aOpCode->size_bytes = 2;
-                aOpCode->data = 0x41 | ((0x50 + registerNumber(instr.src->reg)) << 8);
+                aOpCode->data = 0x41 | ((0x50 + registerNumber(instr->src->reg)) << 8);
             }
             break;
         }
