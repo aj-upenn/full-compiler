@@ -154,7 +154,6 @@ void instructionResolve(struct asm_instr* instr)
                 else{
                     text_address += 4;
                 }
-                text_address += 7;
             }
 
             break;

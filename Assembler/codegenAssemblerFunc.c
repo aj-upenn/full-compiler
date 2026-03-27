@@ -9,12 +9,13 @@ extern struct asm_program * program_pointer;
 //extern long text_address = 0;
 const unsigned int CURRENT_STRTAB_LEN = 24 + 1;
 const unsigned int SHSTRTAB_LEN = 63;
+const unsigned int HEADER_LEN = 64;
 
 void codeGen() {
-    struct binary_section *header = binarySectionCreate(64, SECTION_HEADER);
-    setHeader(header, 0x0130 );  // FIX
 
-    struct binary_section *instructions = binarySectionCreate(text_address, SECTION_TEXT);
+    int padded_size = (text_address + 7) & ~0x7;
+    int text_padding = padded_size - text_address;
+    struct binary_section *instructions = binarySectionCreate(padded_size, SECTION_TEXT);
     setInstructions(instructions);
 
     FILE *fp = fopen("output.o", "wb");
@@ -24,8 +25,11 @@ void codeGen() {
     }
     
 
+    
     struct binary_section *strtab = binarySectionCreate(CURRENT_STRTAB_LEN, SECTION_SHSTRTAB);
-    struct binary_section *data = binarySectionCreate(3*sizeof(struct binary_symbol), SECTION_DATA); // UPDATE AT END
+    
+    int data_entries = 3;
+    struct binary_section *data = binarySectionCreate(data_entries*sizeof(struct binary_symbol), SECTION_DATA); // UPDATE AT END
     setDataStrtab(data, strtab);
 
     struct binary_section *shstrtab = binarySectionCreate(SHSTRTAB_LEN, SECTION_SHSTRTAB);
@@ -35,10 +39,12 @@ void codeGen() {
     //setSymTab(symtab);
 
     struct binary_section *section_descriptions = binarySectionCreate(8*sizeof(struct section_description), SECTION_SHSTRTAB); // UPDATE AT END
-    setSectionDescriptions(section_descriptions);
+    setSectionDescriptions(section_descriptions, instructions->size-text_padding);
 
     //struct binary_section *bss = binarySectionCreate(64, SECTION_BSS); // UPDATE AT END
     
+    struct binary_section *header = binarySectionCreate(HEADER_LEN, SECTION_HEADER);
+    setHeader(header, HEADER_LEN + padded_size + CURRENT_STRTAB_LEN + data_entries*sizeof(struct binary_symbol) + SHSTRTAB_LEN);  // FIX
 
     writeBinary(fp, header);
     writeBinary(fp, instructions);
@@ -68,12 +74,12 @@ void emitDescription(struct binary_section *s, struct section_description * d)
 
 
 
-void setSectionDescriptions(struct binary_section *s)
+void setSectionDescriptions(struct binary_section *s, uint32_t text_size)
 {
     struct section_description* first = createBinarySectionDescription(0,0,0,0,0,0,0,0,0,0);
     emitDescription(s, first);
 
-    struct section_description* text = createBinarySectionDescription(0x1b,0x01,0x06,0,0x40,0x4a,0,0,0x01,0);
+    struct section_description* text = createBinarySectionDescription(0x1b,0x01,0x06,0,0x40,text_size,0,0,0x01,0);
     emitDescription(s, text);
 
     struct section_description* data = createBinarySectionDescription(0x21,0x01,0x03,0,0x8a,0,0,0,0x01,0);
@@ -178,44 +184,12 @@ void setSymTab(struct binary_section *s)
         symb = symb->next;
         //s->size+=4;
     }
-
-    /*
-    struct asm_line *line = program_pointer->lines;
-    while(line) {
-        if(line->kind == ASM_LINE_LABEL){
-            int length = strlen(line->label_name);
-            for(int i = 0; i < length; i++)
-            {
-                emitbyte(s, line->label_name[i]);
-                s->size++;
-            }
-            emitbyte(s, 0);
-            s->size++;
-        }
-        else if(line->kind == ASM_LINE_DIRECTIVE && line->directive != 0 && line->directive->kind == DIR_FILE) 
-        {
-            int length = strlen(line->directive->name);
-            for(int i = 0; i < length; i++)
-            {
-                emitbyte(s, line->directive->name[i]);
-                s->size++;
-            }
-            emitbyte(s, 0);
-            s->size++;
-            
-        }
-        else {
-
-        }
-        line = line->next;
-    }
-    */
 }
 
 
-void padto16(struct binary_section *s)
+void padto8(struct binary_section *s)
 {
-    while(s->size % 16 != 0)
+    while(s->size % 8 != 0)
     {
         emitbyte(s, 0);
         s->size += 1;
@@ -262,7 +236,7 @@ void setInstructions(struct binary_section *s)
         }
         line = line->next;
     }
-    padto16(s);
+    padto8(s);
 }
 
 void setHeader(struct binary_section *s, uint64_t offset_to_header)
@@ -472,11 +446,11 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
 
             }
             else if (is_reg(instr->src) && is_mem(instr->dest)) {
-                //int src = registerNumber(instr->src->reg);
+                int src = registerNumber(instr->src->reg);
                 int dest = registerNumber(instr->dest->memory.base);
 
                 aOpCode->size_bytes = 4;
-                aOpCode->data = (uint32_t) __builtin_bswap16(0x4c89) | (uint32_t) getRM(MOD_MEM_DISP8, 0b101, dest)  << 16 | (uint32_t) 0xf8 << 24;
+                aOpCode->data = getRegPrefix(src) | 0x89 << 8 | (uint32_t) getRM(MOD_MEM_DISP8, 0b101, dest)  << 16 | (uint32_t) 0xf8 << 24;
             }
             else if (is_mem(instr->src) && is_reg(instr->dest)) {
                 //int src = registerNumber(instr->dest->memory.base);
@@ -512,6 +486,7 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
                     aOpCode->size_bytes = 4;
                     aOpCode->data = __builtin_bswap16(0x4883) | getRM(MOD_REGISTER, 0b101, dest) << 16 ;
                 }
+
                 aOpCode->data |= instr->src->immediate << 24;
                                 
                 
@@ -527,7 +502,6 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
                     aOpCode->data = __builtin_bswap16(0x48c7) | getRM(MOD_MEM_DISP8, 0b101, dest) << 16 ;
                 }
                 aOpCode->data |= instr->src->immediate << 24;
-                aOpCode->size_bytes = 7;
             }
 
             break;

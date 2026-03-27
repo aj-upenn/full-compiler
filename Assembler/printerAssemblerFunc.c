@@ -99,7 +99,7 @@ void operandPrint(struct asm_operand* operand)
             registerPrint(operand->reg);
             break;
         case OPERAND_IMMEDIATE:
-            printf("$%ld", operand->immediate);
+            printf("$%lld", operand->immediate);
             break;
         case OPERAND_MEMORY:
             memoryPrint(operand->memory);
