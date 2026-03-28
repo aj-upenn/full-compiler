@@ -106,15 +106,7 @@ void instructionResolve(struct asm_instr* instr)
                 text_address += 7;
             }
             else if(is_imm(instr->src) && is_mem(instr->dest)){
-
-
                 text_address += 8;
-                if(instr->dest->memory.offset == -8){
-                }
-                else {
-                    printf("MUST IMPLEMENT 1\n");
-                }
-
             }
             else if (is_reg(instr->src) && is_mem(instr->dest)) {
                 text_address += 4;

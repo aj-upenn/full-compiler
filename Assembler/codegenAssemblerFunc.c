@@ -407,6 +407,7 @@ uint8_t getRegPrefix(int reg)
         return 0b01001000;
     }
 }
+
 struct op_code* instructionOpCode(struct asm_instr* instr)
 {
     struct op_code* aOpCode = malloc(sizeof(struct op_code));
@@ -425,7 +426,7 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
             else if (is_imm(instr->src) && is_reg(instr->dest)) {
                 long imm = instr->src->immediate;
                 int dest = registerNumber(instr->dest->reg);
-
+                 
                 aOpCode->size_bytes = 7;
                 aOpCode->data = (uint32_t) __builtin_bswap16(0x49c7) |  (uint32_t) getRM(MOD_REGISTER, 0b000, dest)  << 16;
 
@@ -436,12 +437,7 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
                 int dest = registerNumber(instr->dest->memory.base);
 
                 aOpCode->size_bytes = 8;
-                if(instr->dest->memory.offset == -8){
-                    aOpCode->data = (uint32_t) __builtin_bswap16(0x48c7) |  (uint32_t) getRM(MOD_MEM_DISP8, 0b000, dest)  << 16 | (uint32_t) 0xf8 << 24;
-                }
-                else {
-                    printf("MUST IMPLEMENT 1\n");
-                }
+                aOpCode->data = (uint32_t) __builtin_bswap16(0x48c7) |  (uint32_t) getRM(MOD_MEM_DISP8, 0b000, dest)  << 16 | (uint32_t) instr->dest->memory.offset << 24;
 
                 aOpCode->data |= imm << 32;
 
@@ -451,14 +447,15 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
                 int dest = registerNumber(instr->dest->memory.base);
 
                 aOpCode->size_bytes = 4;
-                aOpCode->data = getRegPrefix(src) | 0x89 << 8 | (uint32_t) getRM(MOD_MEM_DISP8, 0b101, dest)  << 16 | (uint32_t) 0xf8 << 24;
+                aOpCode->data = getRegPrefix(src) | 0x89 << 8 | (uint32_t) getRM(MOD_MEM_DISP8, 0b101, dest)  << 16 | (uint32_t) instr->dest->memory.offset << 24;
             }
             else if (is_mem(instr->src) && is_reg(instr->dest)) {
-                int src = registerNumber(instr->dest->memory.base);
+                //int src = registerNumber(instr->dest->memory.base);
                 int dest = registerNumber(instr->dest->reg);
-
+                //uint8_t mod = (instr->src->memory.offset == -8) ? (MOD_MEM_DISP8) : (MOD_MEM_DISP32);
+                
                 aOpCode->size_bytes = 4;
-                aOpCode->data = (uint32_t) __builtin_bswap16(0x4c8b) | (uint32_t) getRM(MOD_MEM_DISP8, dest, 0b101)  << 16 | (uint32_t) 0xf8 << 24;
+                aOpCode->data = (uint32_t) __builtin_bswap16(0x4c8b) | (uint32_t) getRM(MOD_MEM_DISP8, dest, 0b101)  << 16 | (uint32_t) instr->src->memory.offset << 24;
             }
             break;
 
