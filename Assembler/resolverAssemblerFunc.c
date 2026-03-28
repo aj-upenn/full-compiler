@@ -100,19 +100,26 @@ void instructionResolve(struct asm_instr* instr)
     switch(instr->kind) {
         case OP_INSTR_MOVQ:
             if (is_reg(instr->src) && is_reg(instr->dest)) {
-                text_address += 3;  // REX + opcode + modrm
+                text_address += 3; // REX + opcode + ModR/M
             }
+
             else if (is_imm(instr->src) && is_reg(instr->dest)) {
-                text_address += 7;
+                text_address += 7; // REX + opcode + ModR/M + imm32
             }
-            else if(is_imm(instr->src) && is_mem(instr->dest)){
-                text_address += 8;
+
+            else if (is_imm(instr->src) && is_mem(instr->dest)) {
+                int mod  = (instr->dest->memory.offset >= -128 && instr->dest->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
+                text_address += (mod == MOD_MEM_DISP8 ? 8 : 10);
             }
+
             else if (is_reg(instr->src) && is_mem(instr->dest)) {
-                text_address += 4;
+                int mod  = (instr->dest->memory.offset >= -128 && instr->dest->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
+                text_address += (mod == MOD_MEM_DISP8 ? 4 : 6);
             }
+
             else if (is_mem(instr->src) && is_reg(instr->dest)) {
-                text_address += 4;
+                int mod  = (instr->src->memory.offset >= -128 && instr->src->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
+                text_address += (mod == MOD_MEM_DISP8 ? 4 : 6);
             }
             break;
 
@@ -121,12 +128,8 @@ void instructionResolve(struct asm_instr* instr)
             break;
 
         case OP_INSTR_ADDQ:
-            text_address += 2;
-            break;
-
-        case OP_INSTR_SUBQ:
             if (is_reg(instr->src) && is_reg(instr->dest)) {
-                text_address += 3;
+                text_address += 3; // REX + opcode + ModR/M
             }
             else if (is_imm(instr->src) && is_reg(instr->dest)) {
                 if(abs((int)instr->src->immediate) >= 128) {
@@ -134,12 +137,31 @@ void instructionResolve(struct asm_instr* instr)
                 }
                 else{
                     text_address += 4;
-
                 }
-                                
-                
             }
-            else if (is_mem(instr->src) || is_mem(instr->dest) || is_label(instr->src) || is_label(instr->dest)) {
+            else if (is_imm(instr->src) && is_mem(instr->dest)) {
+                if(abs((int)instr->src->immediate) >= 128) {
+                    text_address += 8;
+                }
+                else{
+                    text_address += 5;
+                }
+            }
+            else if (is_reg(instr->src) && is_mem(instr->dest)) {
+                int mod  = (instr->dest->memory.offset >= -128 && instr->dest->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
+                text_address += (mod == MOD_MEM_DISP8 ? 4 : 6);
+            }
+            else if (is_mem(instr->src) && is_reg(instr->dest)) {
+                int mod  = (instr->src->memory.offset >= -128 && instr->src->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
+                text_address += (mod == MOD_MEM_DISP8 ? 4 : 6);
+            }
+            break;
+
+        case OP_INSTR_SUBQ:
+            if (is_reg(instr->src) && is_reg(instr->dest)) {
+                text_address += 3; // REX + opcode + ModR/M
+            }
+            else if (is_imm(instr->src) && is_reg(instr->dest)) {
                 if(abs((int)instr->src->immediate) >= 128) {
                     text_address += 7;
                 }
@@ -147,8 +169,24 @@ void instructionResolve(struct asm_instr* instr)
                     text_address += 4;
                 }
             }
-
+            else if (is_imm(instr->src) && is_mem(instr->dest)) {
+                if(abs((int)instr->src->immediate) >= 128) {
+                    text_address += 8;
+                }
+                else{
+                    text_address += 5;
+                }
+            }
+            else if (is_reg(instr->src) && is_mem(instr->dest)) {
+                int mod  = (instr->dest->memory.offset >= -128 && instr->dest->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
+                text_address += (mod == MOD_MEM_DISP8 ? 4 : 6);
+            }
+            else if (is_mem(instr->src) && is_reg(instr->dest)) {
+                int mod  = (instr->src->memory.offset >= -128 && instr->src->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
+                text_address += (mod == MOD_MEM_DISP8 ? 4 : 6);
+            }
             break;
+            
         case OP_INSTR_CMPQ:
             if (is_imm(instr->src) && is_reg(instr->dest)) {
                 text_address += 4;
