@@ -129,7 +129,7 @@ void setInstructions(struct binary_section *s);
 void setSymTab(struct binary_section *s);
 void setShstrtab(struct binary_section *s);
 void setDataStrtab(struct binary_section *data, struct binary_section *strtab);
-uint8_t getRM(modrm_mod modrm_mod, int reg1, int reg2);
+uint8_t getRM(uint8_t mod, uint8_t reg, uint8_t rm);
 void padto8(struct binary_section *s);
 void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32_t text_padding, uint32_t data_size);
 

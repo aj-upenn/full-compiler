@@ -359,12 +359,12 @@ CQO	48 99
 RET	C3
 */
 
-uint8_t getRM(modrm_mod modrm_mod, int num1, int num2)
-{
-    if(num1 > 8) { num1 -= 8; }
-    if(num2 > 8) { num2 -= 8; }
-    return (modrm_mod << 6) | (num1 << 3) | (num2);
-}
+// uint8_t getRM(modrm_mod modrm_mod, int num1, int num2)
+// {
+//     if(num1 > 8) { num1 -= 8; }
+//     if(num2 > 8) { num2 -= 8; }
+//     return (modrm_mod << 6) | (num1 << 3) | (num2);
+// }
 
 struct section_description* createBinarySectionDescription(uint32_t sh_name,
     uint32_t sh_type,
@@ -408,56 +408,74 @@ uint8_t getRegPrefix(int reg)
     }
 }
 
+// Compute REX prefix for a 64-bit instruction
+uint8_t getREX(int reg_field, int rm_field, int w) {
+    uint8_t rex = 0x40;   // 0100----
+    if(w) rex |= 0x08;    // W = 1 for 64-bit operand
+    if(reg_field >= 8) rex |= 0x04;  // REX.R
+    if(rm_field  >= 8) rex |= 0x01;  // REX.B
+    return rex;
+}
+
+// ModR/M byte
+uint8_t getRM(uint8_t mod, uint8_t reg, uint8_t rm) {
+    return (mod << 6) | ((reg & 0x7) << 3) | (rm & 0x7);
+}
+
 struct op_code* instructionOpCode(struct asm_instr* instr)
 {
     struct op_code* aOpCode = malloc(sizeof(struct op_code));
 
     switch(instr->kind) {
         case OP_INSTR_MOVQ:
-            if (is_reg(instr->src) && is_reg(instr->dest)) {
-                int src = registerNumber(instr->src->reg);
-                int dest = registerNumber(instr->dest->reg);
+        if (is_reg(instr->src) && is_reg(instr->dest)) {
+            int src = registerNumber(instr->src->reg);
+            int dest = registerNumber(instr->dest->reg);
 
-                aOpCode->size_bytes = 3;  // REX + opcode + modrm
+            aOpCode->size_bytes = 3; // REX + opcode + ModR/M
+            aOpCode->data = getREX(src, dest, 1) | 0x89 << 8 | (uint32_t)getRM(MOD_REGISTER, src, dest) << 16;
+        }
 
-                aOpCode->data = getRegPrefix(src) | 0x89 << 8 | getRM(MOD_REGISTER, src, dest) << 16;
+        else if (is_imm(instr->src) && is_reg(instr->dest)) {
+            long imm = instr->src->immediate;
+            int dest = registerNumber(instr->dest->reg);
 
-            }
-            else if (is_imm(instr->src) && is_reg(instr->dest)) {
-                long imm = instr->src->immediate;
-                int dest = registerNumber(instr->dest->reg);
-                 
-                aOpCode->size_bytes = 7;
-                aOpCode->data = (uint32_t) __builtin_bswap16(0x49c7) |  (uint32_t) getRM(MOD_REGISTER, 0b000, dest)  << 16;
+            aOpCode->size_bytes = 7; // REX + opcode + ModR/M + imm32
+            aOpCode->data = getREX(0, dest, 1) | 0xC7 << 8 | (uint32_t)getRM(MOD_REGISTER, 0, dest) << 16;
+            aOpCode->data |= (uint32_t)imm << 24;
+        }
 
-                aOpCode->data |= imm << 24;
-            }
-            else if(is_imm(instr->src) && is_mem(instr->dest)){
-                long imm = instr->src->immediate;
-                int dest = registerNumber(instr->dest->memory.base);
+        else if (is_imm(instr->src) && is_mem(instr->dest)) {
+            long long imm = instr->src->immediate;
+            int base = registerNumber(instr->dest->memory.base);
+            int mod  = (instr->dest->memory.offset >= -128 && instr->dest->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
 
-                aOpCode->size_bytes = 8;
-                aOpCode->data = (uint32_t) __builtin_bswap16(0x48c7) |  (uint32_t) getRM(MOD_MEM_DISP8, 0b000, dest)  << 16 | (uint32_t) instr->dest->memory.offset << 24;
+            aOpCode->size_bytes = (mod == MOD_MEM_DISP8 ? 8 : 10);
+            aOpCode->data = getREX(0, base, 1) | 0xC7 << 8 | (uint32_t)getRM(mod, 0, base) << 16;
+            aOpCode->data |= (uint32_t)(instr->dest->memory.offset & 0xFF) << 24;
+            aOpCode->data |= (imm << 32);
+        }
 
-                aOpCode->data |= imm << 32;
+        else if (is_reg(instr->src) && is_mem(instr->dest)) {
+            int src  = registerNumber(instr->src->reg);
+            int base = registerNumber(instr->dest->memory.base);
+            int mod  = (instr->dest->memory.offset >= -128 && instr->dest->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
 
-            }
-            else if (is_reg(instr->src) && is_mem(instr->dest)) {
-                int src = registerNumber(instr->src->reg);
-                int dest = registerNumber(instr->dest->memory.base);
+            aOpCode->size_bytes = (mod == MOD_MEM_DISP8 ? 4 : 6);
+            aOpCode->data = getREX(src, base, 1) | 0x89 << 8 | (uint32_t)getRM(mod, src, base) << 16;
+            aOpCode->data |= (uint32_t)(instr->dest->memory.offset & 0xFF) << 24;
+        }
 
-                aOpCode->size_bytes = 4;
-                aOpCode->data = getRegPrefix(src) | 0x89 << 8 | (uint32_t) getRM(MOD_MEM_DISP8, 0b101, dest)  << 16 | (uint32_t) instr->dest->memory.offset << 24;
-            }
-            else if (is_mem(instr->src) && is_reg(instr->dest)) {
-                //int src = registerNumber(instr->dest->memory.base);
-                int dest = registerNumber(instr->dest->reg);
-                //uint8_t mod = (instr->src->memory.offset == -8) ? (MOD_MEM_DISP8) : (MOD_MEM_DISP32);
-                
-                aOpCode->size_bytes = 4;
-                aOpCode->data = (uint32_t) __builtin_bswap16(0x4c8b) | (uint32_t) getRM(MOD_MEM_DISP8, dest, 0b101)  << 16 | (uint32_t) instr->src->memory.offset << 24;
-            }
-            break;
+        else if (is_mem(instr->src) && is_reg(instr->dest)) {
+            int dest = registerNumber(instr->dest->reg);
+            int base = registerNumber(instr->src->memory.base);
+            int mod  = (instr->src->memory.offset >= -128 && instr->src->memory.offset <= 127) ? MOD_MEM_DISP8 : MOD_MEM_DISP32;
+
+            aOpCode->size_bytes = (mod == MOD_MEM_DISP8 ? 4 : 6);
+            aOpCode->data = getREX(dest, base, 1) | 0x8B << 8 | (uint32_t)getRM(mod, dest, base) << 16;
+            aOpCode->data |= (uint32_t)(instr->src->memory.offset & 0xFF) << 24;
+        }
+        break;
 
         case OP_INSTR_LEAQ:
             aOpCode->size_bytes = 2;
@@ -504,18 +522,48 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
 
             break;
         case OP_INSTR_CMPQ:
-            aOpCode->size_bytes = 2;
-            aOpCode->data = 0x4839;
+            if (is_imm(instr->src) && is_reg(instr->dest)) {
+                //int src = registerNumber(instr->src->reg);
+                int dest = registerNumber(instr->dest->reg);
+                aOpCode->size_bytes = 4;
+                aOpCode->data = 0x49 | 0x83 << 8 | getRM(MOD_REGISTER, 0b111, dest) << 16 |  instr->src->immediate << 24;
+            }
+            else if (is_reg(instr->src) && is_reg(instr->dest)) {
+                int src = registerNumber(instr->src->reg);
+                int dest = registerNumber(instr->dest->reg);
+                aOpCode->size_bytes = 3;
+                aOpCode->data = 0x4D | 0x39 << 8 | getRM(MOD_REGISTER, src, dest) << 16;
+            }
+            else
+            {
+                printf("UNDEFINED!\n");
+            }
             break;
 
         case OP_INSTR_IDIVQ:
-            aOpCode->size_bytes = 2;
-            aOpCode->data = 0x48F7;
+            int src = registerNumber(instr->src->reg);
+            aOpCode->size_bytes = 3;
+            if(src <= 7)
+            {
+                aOpCode->data = 0x48 | 0xf7 << 8 | getRM(MOD_REGISTER, 0b111, src) << 16;
+            }  
+            else
+            {
+                aOpCode->data = 0x49 | 0xf7 << 8 | getRM(MOD_REGISTER, 0b111, src) << 16;
+            }
             break;
 
         case OP_INSTR_NEGQ:
-            aOpCode->size_bytes = 2;
-            aOpCode->data = 0x48F7;
+            src = registerNumber(instr->src->reg);
+            aOpCode->size_bytes = 3;
+            if(src <= 7)
+            {
+                aOpCode->data = 0x48 | 0xf7 << 8 | getRM(MOD_REGISTER, 0b011, src) << 16;
+            }  
+            else
+            {
+                aOpCode->data = 0x49 | 0xf7 << 8 | getRM(MOD_REGISTER, 0b011, src) << 16;
+            }
             break;
 
         case OP_INSTR_INCQ:
@@ -559,8 +607,16 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
             break;
         }
         case OP_INSTR_IMULQ:
-            aOpCode->size_bytes = 2;
-            aOpCode->data = 0x48F7;
+            src = registerNumber(instr->src->reg);
+            aOpCode->size_bytes = 3;
+            if(src <= 7)
+            {
+                aOpCode->data = 0x48 | 0xf7 << 8 | getRM(MOD_REGISTER, 0b101, src) << 16;
+            }  
+            else
+            {
+                aOpCode->data = 0x49 | 0xf7 << 8 | getRM(MOD_REGISTER, 0b101, src) << 16;
+            }
             break;
 
         case OP_INSTR_JE:
@@ -605,7 +661,7 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
 
         case OP_INSTR_CQO:
             aOpCode->size_bytes = 2;
-            aOpCode->data = 0x4899;
+            aOpCode->data = __builtin_bswap16(0x4899);
             break;
 
         case OP_INSTR_RET:

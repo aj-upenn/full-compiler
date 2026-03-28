@@ -150,15 +150,20 @@ void instructionResolve(struct asm_instr* instr)
 
             break;
         case OP_INSTR_CMPQ:
-            text_address += 2;
+            if (is_imm(instr->src) && is_reg(instr->dest)) {
+                text_address += 4;
+            }
+            else if (is_reg(instr->src) && is_reg(instr->dest)) {
+                text_address += 3;
+            }
             break;
 
         case OP_INSTR_IDIVQ:
-            text_address += 2;
+            text_address += 3;
             break;
 
         case OP_INSTR_NEGQ:
-            text_address += 2;
+            text_address += 3;
             break;
 
         case OP_INSTR_INCQ:
@@ -196,7 +201,7 @@ void instructionResolve(struct asm_instr* instr)
             break;
         }
         case OP_INSTR_IMULQ:
-            text_address += 2;
+            text_address += 3;
 
             break;
 
