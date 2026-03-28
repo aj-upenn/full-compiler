@@ -124,7 +124,7 @@ struct asm_operand {
 
     union {
         enum register_kind reg;
-        long immediate;
+        long long immediate;
         char *label;
 
         struct memory_ref memory;
