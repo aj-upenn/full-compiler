@@ -118,6 +118,19 @@ ADDQ rbx rax
 D8 = 11 (mode) 011 (reg1) 000 (reg2) 
 */
 
+enum symbol_bind {
+    STB_LOCAL  = 0,
+    STB_GLOBAL = 1,
+    STB_WEAK   = 2,
+};
+
+enum symbol_type {
+    STT_NOTYPE  = 0,
+    STT_OBJECT  = 1,
+    STT_FUNC    = 2,
+    // add more as needed
+};
+
 void codeGen();
 void emitbyte(struct binary_section *s, char byte);
 void emit8(struct binary_section *s, uint64_t value);
@@ -127,10 +140,12 @@ struct binary_section* binarySectionCreate(int section_size, section_kind kind);
 void setHeader(struct binary_section *s, uint64_t offset_to_header);
 void setInstructions(struct binary_section *s);
 void setSymTab(struct binary_section *s);
-void setShstrtab(struct binary_section *s);
+void setShstrtab(struct binary_section *s, unsigned int padding);
 void setDataStrtab(struct binary_section *data, struct binary_section *strtab);
 uint8_t getRM(uint8_t mod, uint8_t reg, uint8_t rm);
 void padto8(struct binary_section *s);
-void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32_t text_padding, uint32_t data_size);
+void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32_t text_padding, uint32_t data_size, uint32_t strTabStringLength);
+int strtabLenStrings();
+int strtabEntries();
 
 void writeBinary(FILE*fp, struct binary_section *s);

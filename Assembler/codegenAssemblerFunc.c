@@ -7,15 +7,14 @@
 extern struct asm_program * program_pointer;
 //extern section_kind current_section;
 //extern long text_address = 0;
-const unsigned int CURRENT_STRTAB_LEN = 24 + 1;
-const unsigned int SHSTRTAB_LEN = 63;
+const unsigned int SHSTRTAB_LEN = 60;
 const unsigned int HEADER_LEN = 64;
 
 void codeGen() {
 
-    int padded_size = (text_address + 7) & ~0x7;
-    int text_padding = padded_size - text_address;
-    struct binary_section *instructions = binarySectionCreate(padded_size, SECTION_TEXT);
+    int padded_size_text = (text_address + 7) & ~0x7;
+    int text_padding = padded_size_text - text_address;
+    struct binary_section *instructions = binarySectionCreate(padded_size_text, SECTION_TEXT);
     setInstructions(instructions);
 
     FILE *fp = fopen("output.o", "wb");
@@ -25,27 +24,34 @@ void codeGen() {
     }
     
 
+    int strTabStringLength = strlen(program_pointer->lines->directive->name) + 1 + strtabLenStrings() + 1;
+    struct binary_section *strtab = binarySectionCreate(strTabStringLength, SECTION_SHSTRTAB);
     
-    struct binary_section *strtab = binarySectionCreate(CURRENT_STRTAB_LEN, SECTION_SHSTRTAB);
-    
-    int data_entries = 3;
+    int data_entries = strtabEntries();
     int data_size = data_entries * sizeof(struct binary_symbol);
     struct binary_section *data = binarySectionCreate(data_size, SECTION_DATA); // UPDATE AT END
     setDataStrtab(data, strtab);
 
-    struct binary_section *shstrtab = binarySectionCreate(SHSTRTAB_LEN, SECTION_SHSTRTAB);
-    setShstrtab(shstrtab);
+    int current_length = HEADER_LEN + padded_size_text + strTabStringLength + data_size;
+    int length_with_SHSTR = current_length + SHSTRTAB_LEN;
+    int SHSTR_padding = 8 - (length_with_SHSTR % 8);
+    if(SHSTR_padding == 8) { SHSTR_padding = 0; }
+    int padded_SHSTR_size = SHSTRTAB_LEN + SHSTR_padding;
+    printf("SHSTR_padding %d\n", SHSTR_padding);
+    printf("padded_SHSTR_size %d\n", padded_SHSTR_size);
+    struct binary_section *shstrtab = binarySectionCreate(padded_SHSTR_size, SECTION_SHSTRTAB);
+    setShstrtab(shstrtab, SHSTR_padding);
 
     //struct binary_section *symtab = binarySectionCreate(20000, SECTION_SYMTAB); // UPDATE AT END
     //setSymTab(symtab);
 
     struct binary_section *section_descriptions = binarySectionCreate(8*sizeof(struct section_description), SECTION_SHSTRTAB); // UPDATE AT END
-    setSectionDescriptions(section_descriptions, instructions->size-text_padding, text_padding, data->size);
+    setSectionDescriptions(section_descriptions, instructions->size-text_padding, text_padding, data->size, strTabStringLength);
 
     //struct binary_section *bss = binarySectionCreate(64, SECTION_BSS); // UPDATE AT END
     
     struct binary_section *header = binarySectionCreate(HEADER_LEN, SECTION_HEADER);
-    setHeader(header, HEADER_LEN + padded_size + CURRENT_STRTAB_LEN + data_size + SHSTRTAB_LEN);  // FIX
+    setHeader(header, HEADER_LEN + padded_size_text + strTabStringLength + data_size + padded_SHSTR_size);
 
     writeBinary(fp, header);
     writeBinary(fp, instructions);
@@ -56,6 +62,37 @@ void codeGen() {
         //writeBinary(fp, symtab);
 
     fclose(fp);
+}
+
+int strtabLenStrings()
+{
+    struct asm_symbol * symb = program_pointer->symbols;
+    uint32_t strtab_index = 0;
+    int length = 0;
+
+    while(symb != 0)
+    {
+        createBinarySymbol(strtab_index,0x10,0,0x01,0,0);
+        length += strlen(symb->name)+1;
+        strtab_index += strlen(symb->name)+1;
+        symb = symb->next;
+    }
+
+    return length;
+}
+
+int strtabEntries()
+{
+    struct asm_symbol * symb = program_pointer->symbols;
+    int length = 0;
+
+    while(symb != 0)
+    {
+        length++;
+        symb = symb->next;
+    }
+
+    return length + 2;
 }
 
 void emitDescription(struct binary_section *s, struct section_description * d)
@@ -75,7 +112,7 @@ void emitDescription(struct binary_section *s, struct section_description * d)
 
 
 
-void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32_t text_padding, uint32_t data_size)
+void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32_t text_padding, uint32_t data_size, uint32_t strTabStringLength)
 {
     struct section_description* first = createBinarySectionDescription(0,0,0,0,0,0,0,0,0,0);
     emitDescription(s, first);
@@ -92,13 +129,13 @@ void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32
     struct section_description* notegnustack = createBinarySectionDescription(0x2c,0x01,0,0,HEADER_LEN+text_size,0,0,0,0x01,0);
     emitDescription(s, notegnustack);
 
-    struct section_description* symtab = createBinarySectionDescription(0x01,0x02,0,0,HEADER_LEN+text_size+text_padding,0x48,0x06,0x02,0x08,0x18);
+    struct section_description* symtab = createBinarySectionDescription(0x01,0x02,0,0,HEADER_LEN+text_size+text_padding,data_size,0x06,strtabEntries()-1,0x08,0x18);
     emitDescription(s, symtab);
 
-    struct section_description* strtab = createBinarySectionDescription(0x09,0x03,0,0,HEADER_LEN+text_size+text_padding+data_size,0x19,0,0,0x01,0);
+    struct section_description* strtab = createBinarySectionDescription(0x09,0x03,0,0,HEADER_LEN+text_size+text_padding+data_size,strTabStringLength,0,0,0x01,0);
     emitDescription(s, strtab);
 
-    struct section_description* shstrtab = createBinarySectionDescription(0x11,0x03,0,0,HEADER_LEN+text_size+text_padding+data_size + CURRENT_STRTAB_LEN,0x3c,0,0,0x01,0);
+    struct section_description* shstrtab = createBinarySectionDescription(0x11,0x03,0,0,HEADER_LEN+text_size+text_padding+data_size + strTabStringLength,0x3c,0,0,0x01,0);
     emitDescription(s, shstrtab);
 }
 
@@ -111,6 +148,7 @@ void emitSymbol(struct binary_section *s, struct binary_symbol * symb)
     emit8(s, symb->st_value);
     emit8(s, symb->st_size);
 }
+#define ELF64_ST_INFO(bind,type) (((bind)<<4)+((type)&0xf))
 
 void setDataStrtab(struct binary_section *data, struct binary_section *strtab)
 {
@@ -121,7 +159,7 @@ void setDataStrtab(struct binary_section *data, struct binary_section *strtab)
     emitSymbol(data, b);
 
     uint32_t strtab_index = 0;
-    char tab[CURRENT_STRTAB_LEN];
+    char tab[100000];
     tab[strtab_index++] = 0;
     strcpy(&tab[1], program_pointer->lines->directive->name);
     strtab_index += strlen(program_pointer->lines->directive->name) + 1;
@@ -131,13 +169,19 @@ void setDataStrtab(struct binary_section *data, struct binary_section *strtab)
     while(symb != 0)
     {
         
-        // b =  createBinarySymbol(20/*strtab_index*/,0x1000,0x0100,0,0,0);
-        b =  createBinarySymbol(strtab_index,0x10,0,0x01,0,0);
-        emitSymbol(data, b);
-        strcpy(&tab[strtab_index], symb->name);
+    uint32_t name_index = strtab_index;
 
-        strtab_index += strlen(symb->name)+1;
-        symb = symb->next;
+    strcpy(&tab[strtab_index], symb->name);
+    strtab_index += strlen(symb->name) + 1;
+
+    uint8_t bind = symb->is_global ? STB_GLOBAL : STB_LOCAL;
+    uint8_t info = ELF64_ST_INFO(bind, 0);
+
+    b = createBinarySymbol(name_index, info, 0, 0x01, symb->address, 0);
+    emitSymbol(data, b);
+
+    symb = symb->next;
+
     }
 
     for(unsigned int i = 0; i < strtab_index; i++)
@@ -146,18 +190,19 @@ void setDataStrtab(struct binary_section *data, struct binary_section *strtab)
     }
 }
 
-void setShstrtab(struct binary_section *s)
+void setShstrtab(struct binary_section *s, unsigned int padding)
 {
     char * sections_string = "\0.symtab\0.strtab\0.shstrtab\0.text\0.data\0.bss\0.note.GNU-stack";
-    for(size_t i = 0; i < 60; i++)
+    for(size_t i = 0; i < SHSTRTAB_LEN; i++)
     {
         emitbyte(s, sections_string[i]);
     }
 
-    for(unsigned int i = 0; i < SHSTRTAB_LEN - 60; i++)
+    for(unsigned int i = 0; i < padding + 1; i++)
     {
         emitbyte(s, 0);
     }
+
 }
 
 void setSymTab(struct binary_section *s)
