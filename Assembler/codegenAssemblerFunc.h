@@ -131,6 +131,6 @@ void setShstrtab(struct binary_section *s);
 void setDataStrtab(struct binary_section *data, struct binary_section *strtab);
 uint8_t getRM(modrm_mod modrm_mod, int reg1, int reg2);
 void padto8(struct binary_section *s);
-void setSectionDescriptions(struct binary_section *s, uint32_t text_size);
+void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32_t text_padding, uint32_t data_size);
 
 void writeBinary(FILE*fp, struct binary_section *s);
