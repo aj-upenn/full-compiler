@@ -37,13 +37,8 @@ void codeGen() {
     int SHSTR_padding = 8 - (length_with_SHSTR % 8);
     if(SHSTR_padding == 8) { SHSTR_padding = 0; }
     int padded_SHSTR_size = SHSTRTAB_LEN + SHSTR_padding;
-    printf("SHSTR_padding %d\n", SHSTR_padding);
-    printf("padded_SHSTR_size %d\n", padded_SHSTR_size);
     struct binary_section *shstrtab = binarySectionCreate(padded_SHSTR_size, SECTION_SHSTRTAB);
     setShstrtab(shstrtab, SHSTR_padding);
-
-    //struct binary_section *symtab = binarySectionCreate(20000, SECTION_SYMTAB); // UPDATE AT END
-    //setSymTab(symtab);
 
     struct binary_section *section_descriptions = binarySectionCreate(8*sizeof(struct section_description), SECTION_SHSTRTAB); // UPDATE AT END
     setSectionDescriptions(section_descriptions, instructions->size-text_padding, text_padding, data->size, strTabStringLength);
@@ -168,19 +163,19 @@ void setDataStrtab(struct binary_section *data, struct binary_section *strtab)
 
     while(symb != 0)
     {
-        
-    uint32_t name_index = strtab_index;
+            
+        uint32_t name_index = strtab_index;
 
-    strcpy(&tab[strtab_index], symb->name);
-    strtab_index += strlen(symb->name) + 1;
+        strcpy(&tab[strtab_index], symb->name);
+        strtab_index += strlen(symb->name) + 1;
 
-    uint8_t bind = symb->is_global ? STB_GLOBAL : STB_LOCAL;
-    uint8_t info = ELF64_ST_INFO(bind, 0);
+        uint8_t bind = symb->is_global ? STB_GLOBAL : STB_LOCAL;
+        uint8_t info = ELF64_ST_INFO(bind, 0);
 
-    b = createBinarySymbol(name_index, info, 0, 0x01, symb->address, 0);
-    emitSymbol(data, b);
+        b = createBinarySymbol(name_index, info, 0, 0x01, symb->address, 0);
+        emitSymbol(data, b);
 
-    symb = symb->next;
+        symb = symb->next;
 
     }
 
@@ -203,33 +198,6 @@ void setShstrtab(struct binary_section *s, unsigned int padding)
         emitbyte(s, 0);
     }
 
-}
-
-void setSymTab(struct binary_section *s)
-{
-    if(!program_pointer) return;
-    s->size = 0;
-    struct asm_symbol * symb = program_pointer->symbols;
-    while(symb != 0)
-    {
-        int length = strlen(symb->name);
-        for(int i = 0; i < length; i++)
-        {
-            emitbyte(s, symb->name[i]);
-            //s->section_offset++;
-        }
-        emitbyte(s, 0);
-        //s->size++;
-        symb = symb->next;
-    }
-
-    symb = program_pointer->symbols;
-    while(symb != 0)
-    {
-        emit4(s, symb->address);
-        symb = symb->next;
-        //s->size+=4;
-    }
 }
 
 
@@ -439,18 +407,6 @@ struct section_description* createBinarySectionDescription(uint32_t sh_name,
     sec->sh_entsize = sh_entsize;
 
     return sec;
-    }
-
-uint8_t getRegPrefix(int reg)
-{
-    if(reg >= 8)
-    {
-        return 0b01001100;
-    }
-    else
-    {
-        return 0b01001000;
-    }
 }
 
 // Compute REX prefix for a 64-bit instruction

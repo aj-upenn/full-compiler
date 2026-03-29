@@ -139,7 +139,6 @@ void emit2(struct binary_section *s, uint64_t value);
 struct binary_section* binarySectionCreate(int section_size, section_kind kind);
 void setHeader(struct binary_section *s, uint64_t offset_to_header);
 void setInstructions(struct binary_section *s);
-void setSymTab(struct binary_section *s);
 void setShstrtab(struct binary_section *s, unsigned int padding);
 void setDataStrtab(struct binary_section *data, struct binary_section *strtab);
 uint8_t getRM(uint8_t mod, uint8_t reg, uint8_t rm);

@@ -318,33 +318,63 @@ struct asm_symbol *lookupSymbol(const char *name)
 
 struct asm_symbol *insertSymbol(const char *name)
 {
-    if (!program_pointer || !name) return NULL;
+    if (!program_pointer || !name) 
+        return NULL;
 
     struct asm_symbol *existing = lookupSymbol(name);
-
     if (existing != NULL)
     {
-        // if (existing->is_defined)
-        // {
-        //     fprintf(stderr, "Error: duplicate definition of symbol '%s'\n", name);
-        //     exit(1);
-        // }
-
-        // // Placeholder exists (likely from .globl)
-        // existing->address = (current_section == SECTION_TEXT) ? text_address : data_address;
-        // existing->kind = current_section;
-        // existing->is_defined = true;
-
-        return existing;
+        return existing;  // Already exists, return it
     }
 
-    // Create a new symbol (not global by default)
-    //struct asm_symbol *sym = asm_symbol_create((char *)name, (current_section == SECTION_TEXT) ? text_address : data_address, current_section, false, true);
     struct asm_symbol *sym = asm_symbol_create((char *)name, 0, SECTION_UNDEF, false, false);
 
-    // Insert at head of lista
-    sym->next = program_pointer->symbols;
-    program_pointer->symbols = sym;
+    if (program_pointer->symbols == NULL)
+    {
+        program_pointer->symbols = sym;
+        return sym;
+    }
+
+    struct asm_symbol *cur = program_pointer->symbols;
+    struct asm_symbol *prev = NULL;
+
+    // Special case: inserting "main" → always go to end
+    if (strcmp(name, "main") == 0)
+    {
+        while (cur->next != NULL)
+        {
+            cur = cur->next;
+        }
+        cur->next = sym;
+        return sym;
+    }
+
+    // Otherwise: insert BEFORE "main" if it exists
+    while (cur != NULL)
+    {
+        if (strcmp(cur->name, "main") == 0)
+        {
+            // Insert before "main"
+            if (prev == NULL)
+            {
+                // "main" is first node
+                sym->next = program_pointer->symbols;
+                program_pointer->symbols = sym;
+            }
+            else
+            {
+                prev->next = sym;
+                sym->next = cur;
+            }
+            return sym;
+        }
+
+        prev = cur;
+        cur = cur->next;
+    }
+
+    // If "main" not found → append normally
+    prev->next = sym;
 
     return sym;
 }
