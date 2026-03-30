@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifndef AST_ASSEMBLER_H
 #define AST_ASSEMBLER_H
@@ -89,6 +90,7 @@ struct asm_instr{
    instr_kind kind;
    struct asm_operand* src;
    struct asm_operand* dest;
+   uint32_t addr;
 };
 
 struct asm_directive {

@@ -93,10 +93,7 @@ void directiveResolve(struct asm_directive* dir)
 }
 
 void instructionResolve(struct asm_instr* instr)
-{
-    // struct asm_operand *src = instr->src;
-    // struct asm_operand *dst = instr->dest;
-
+{   
     switch(instr->kind) {
         case OP_INSTR_MOVQ:
             if (is_reg(instr->src) && is_reg(instr->dest)) {
@@ -268,7 +265,7 @@ void instructionResolve(struct asm_instr* instr)
             break;
 
         case OP_INSTR_JMP:
-            text_address += 1;
+            text_address += 5;
             break;
 
         case OP_INSTR_CALL:
@@ -285,6 +282,7 @@ void instructionResolve(struct asm_instr* instr)
 
         default:
     }
+    instr->addr = text_address;
 }
 
 

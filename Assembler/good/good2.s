@@ -25,16 +25,151 @@ _A:
    SUBQ $100, -8(%rbp)
    SUBQ $200, -8(%rbp)
    SUBQ $200, -32(%rbp)
+_B:
    SUBQ %r12, -8(%rbp)
    SUBQ %r12, -32(%rbp)
    SUBQ -32(%rbp), %r14
    ADDQ $3, %r11
    ADDQ $200, %r11
    ADDQ $100, -8(%rbp)
+_C:
    ADDQ $200, -8(%rbp)
    ADDQ $200, -32(%rbp)
    ADDQ %r12, -8(%rbp)
    ADDQ %r12, -32(%rbp)
    ADDQ -32(%rbp), %r14
    CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+      ADDQ $200, -8(%rbp)
+   ADDQ $200, -32(%rbp)
+   ADDQ %r12, -8(%rbp)
+   ADDQ %r12, -32(%rbp)
+   ADDQ -32(%rbp), %r14
+   CQO
+   JMP  _A
    RET

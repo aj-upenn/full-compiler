@@ -687,7 +687,8 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
             break;
         }
         case OP_INSTR_IMULQ:
-            src = registerNumber(instr->src->reg);
+        {
+            int src = registerNumber(instr->src->reg);
             aOpCode->size_bytes = 3;
             if(src <= 7)
             {
@@ -698,7 +699,7 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
                 aOpCode->data = getREX(0, src, 1) | 0xf7 << 8 | getRM(MOD_REGISTER, 0b101, src) << 16;
             }
             break;
-
+        }
         case OP_INSTR_JE:
             aOpCode->size_bytes = 1;
             aOpCode->data = 0x74;
@@ -730,8 +731,16 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
             break;
 
         case OP_INSTR_JMP:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0xEB;
+           struct asm_symbol *s = lookupSymbol(instr->src->label);
+           int32_t offset = s->address - instr->addr;
+          //  if(abs(offset) > 128)
+           // {
+                aOpCode->size_bytes = 5;
+         //   } 
+          //  else{
+         //       aOpCode->size_bytes = 2;
+         //   }
+            aOpCode->data = 0xE9 | offset << 8;
             break;
 
         case OP_INSTR_CALL:
