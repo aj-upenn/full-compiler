@@ -280,6 +280,11 @@ void instructionResolve(struct asm_instr* instr)
             text_address += 1;
             break;
 
+        case OP_INSTR_NOP:
+            text_address += 1;
+            break;
+
+
         default:
     }
     instr->addr = text_address;

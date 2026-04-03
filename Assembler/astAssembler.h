@@ -27,7 +27,8 @@ typedef enum instr_kind {
     OP_INSTR_CALL,
     OP_INSTR_PUSHQ,
     OP_INSTR_POPQ,
-    OP_INSTR_RET
+    OP_INSTR_RET,
+    OP_INSTR_NOP
 } instr_kind;
 
 typedef enum register_kind {

@@ -62,6 +62,7 @@
 %token TOKEN_INSTR_PUSHQ
 %token TOKEN_INSTR_POPQ
 %token TOKEN_INSTR_RET
+%token TOKEN_INSTR_NOP
 
 %token TOKEN_ERROR_UNDEFINED_CHAR
 %token TOKEN_EOF
@@ -176,6 +177,7 @@ instruction_1_operand : TOKEN_INSTR_NEGQ   { $$ = OP_INSTR_NEGQ; }
                   
 instruction_0_operand: TOKEN_INSTR_CQO     { $$ = OP_INSTR_CQO; }
                      | TOKEN_INSTR_RET     { $$ = OP_INSTR_RET; }
+                     | TOKEN_INSTR_NOP     { $$ = OP_INSTR_NOP; }
                      ;
 
 instruction : instruction_2_operand operand TOKEN_OP_COMMA operand { $$ = instr_create($1, $2, $4); }

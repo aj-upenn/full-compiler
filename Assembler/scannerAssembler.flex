@@ -76,6 +76,7 @@ CALL                       { return TOKEN_INSTR_CALL; }
 PUSHQ                      { return TOKEN_INSTR_PUSHQ; }
 POPQ                       { return TOKEN_INSTR_POPQ; }
 RET                        { return TOKEN_INSTR_RET; }
+NOP                        { return TOKEN_INSTR_NOP; }
 
 {IDENTIFIER}               { return TOKEN_IDENTIFIER; } 
 {LITERAL_STRING}           { return TOKEN_LITERAL_STRING; }

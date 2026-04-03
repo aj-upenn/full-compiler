@@ -37,277 +37,289 @@ _C:
    ADDQ $200, -32(%rbp)
    ADDQ %r12, -8(%rbp)
    ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
    ADDQ $200, -32(%rbp)
    ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
    ADDQ -32(%rbp), %r14
    CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
-   ADDQ $200, -8(%rbp)
-   ADDQ $200, -32(%rbp)
-   ADDQ %r12, -8(%rbp)
-   ADDQ %r12, -32(%rbp)
-   ADDQ -32(%rbp), %r14
-   CQO
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
    JMP _A
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
    RET

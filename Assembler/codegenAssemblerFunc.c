@@ -758,6 +758,11 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
             aOpCode->data = 0xC3;
             break;
 
+        case OP_INSTR_NOP:
+            aOpCode->size_bytes = 1;
+            aOpCode->data = 0x90;
+            break;
+
         default:
             free(aOpCode);
             return NULL;
