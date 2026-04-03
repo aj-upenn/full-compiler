@@ -80,5 +80,7 @@ char * label_name( int label ){
 }
 
 void label_print( char * s ){
+   for(int i = 0; i < 128; i ++) {fprintf(ofp, "NOP\n");}
    fprintf(ofp, "%s:\n", s);
+   for(int i = 0; i < 128; i ++) {fprintf(ofp, "NOP\n");}
 }
