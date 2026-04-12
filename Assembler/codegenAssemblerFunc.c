@@ -18,7 +18,7 @@ void codeGen() {
     int text_padding = (8 - ((instructions->size + extra->size) % 8)) % 8;
     int padded_size_text = (instructions->size + extra->size) + text_padding;
     
-    printf("instructions->size %d, padded_size_text %d  text_padding %d ", instructions->size, padded_size_text, text_padding);
+    //printf("instructions->size %d, padded_size_text %d  text_padding %d ", instructions->size, padded_size_text, text_padding);
     if(extra->size == 0) {
         instructions->padding = text_padding;
     } 
@@ -292,7 +292,7 @@ struct binary_section * setInstructions(struct binary_section *s)
     struct binary_section * extra_sec = binarySectionCreate(extra_offset, 0);
     if(extra_sec) 
     {
-        for(int i = 0; i < extra_offset; i++){
+        for(size_t i = 0; i < extra_offset; i++){
             emitbyte(extra_sec, extra[i]);
         }
         //padto8(extra_sec);
