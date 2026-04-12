@@ -28,7 +28,7 @@ _L11:
    .string "aaaaaaaaaa"
 .data
 _L12:
-   .string "aaaaaaaaaa"
+   .string "bbbbbbbbbbbbb"
 .text
 _L3:
    PUSHQ %r14
