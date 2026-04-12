@@ -26,6 +26,9 @@ main:
 .data
 _L11:
    .string "aaaaaaaaaa"
+.data
+_L12:
+   .string "aaaaaaaaaa"
 .text
 _L3:
    PUSHQ %r14
