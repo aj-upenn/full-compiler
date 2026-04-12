@@ -241,27 +241,27 @@ void instructionResolve(struct asm_instr* instr)
             break;
 
         case OP_INSTR_JE:
-            text_address += 1;
+            text_address += 6;
             break;
 
         case OP_INSTR_JNE:
-            text_address += 1;
+            text_address += 6;
             break;
 
         case OP_INSTR_JL:
-            text_address += 1;
+            text_address += 6;
             break;
 
         case OP_INSTR_JG:
-            text_address += 1;
+            text_address += 6;
             break;
 
         case OP_INSTR_JLE:
-            text_address += 1;
+            text_address += 6;
             break;
 
         case OP_INSTR_JGE:
-            text_address += 1;
+            text_address += 6;
             break;
 
         case OP_INSTR_JMP:

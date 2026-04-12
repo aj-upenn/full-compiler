@@ -171,5 +171,6 @@ _C:
    ADDQ %r12, -32(%rbp)
    ADDQ -32(%rbp), %r14
    CQO
+   NOP
    JMP  _A
    RET

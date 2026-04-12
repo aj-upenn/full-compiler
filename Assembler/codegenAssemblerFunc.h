@@ -141,7 +141,7 @@ struct binary_section* binarySectionCreate(int section_size, section_kind kind);
 void setHeader(struct binary_section *s, uint64_t offset_to_header);
 struct binary_section * setInstructions(struct binary_section *s);
 void setShstrtab(struct binary_section *s, unsigned int padding);
-void setDataStrtab(struct binary_section *data, struct binary_section *strtab, bool has_extra);
+void setDataStrtab(struct binary_section *data, struct binary_section *strtab);
 uint8_t getRM(uint8_t mod, uint8_t reg, uint8_t rm);
 void padto8(struct binary_section *s);
 void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32_t text_padding, uint32_t data_size, uint32_t strTabStringLength , uint32_t extraSize);

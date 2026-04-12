@@ -40,7 +40,7 @@ void codeGen() {
     int data_entries = strtabEntries();
     int data_size = data_entries * sizeof(struct binary_symbol);
     struct binary_section *data = binarySectionCreate(data_size, SECTION_DATA); // UPDATE AT END
-    setDataStrtab(data, strtab, extra->size > 0);
+    setDataStrtab(data, strtab);
 
     int current_length = HEADER_LEN + padded_size_text + strTabStringLength + data_size;
     int length_with_SHSTR = current_length + SHSTRTAB_LEN;
@@ -171,7 +171,7 @@ int getSymLength( struct asm_symbol * symb)
 
 #define ELF64_ST_INFO(bind,type) (((bind)<<4)+((type)&0xf))
 
-void setDataStrtab(struct binary_section *data, struct binary_section *strtab, bool has_extra)
+void setDataStrtab(struct binary_section *data, struct binary_section *strtab)
 {
     struct binary_symbol* first =  createBinarySymbol(0,0,0,0,0,0);
     emitSymbol(data, first);
@@ -197,7 +197,7 @@ void setDataStrtab(struct binary_section *data, struct binary_section *strtab, b
         uint8_t bind = symb->is_global ? STB_GLOBAL : STB_LOCAL;
         uint8_t info = ELF64_ST_INFO(bind, 0);
 
-        b = createBinarySymbol(name_index, info, 0, has_extra && !symb->is_global ? 0x02 : 0x01, symb->address, 0);
+        b = createBinarySymbol(name_index, info, 0, symb->kind == SECTION_DATA ? 0x02 : 0x01, symb->address, 0);
         emitSymbol(data, b);
 
         symb = symb->next;
@@ -300,7 +300,7 @@ struct binary_section * setInstructions(struct binary_section *s)
     else{
         //padto8(s);
     }
-    printf("EXATRA |%s|", extra);
+    //printf("EXATRA |%s|", extra);
     return extra_sec;
 }
 
@@ -373,7 +373,7 @@ void writeBinary(FILE*fp, struct binary_section *s){
     }
 
     char *zero = 0;
-    printf("PADDDING!!! |%d|\n", s->padding);
+    //printf("PADDDING!!! |%d|\n", s->padding);
     for(int i = 0; i < s->padding; i++)
     {
         fwrite(&zero, 1, 1, fp);
@@ -760,35 +760,53 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
             break;
         }
         case OP_INSTR_JE:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0x74;
+        {
+            struct asm_symbol *s = lookupSymbol(instr->src->label);
+            int32_t offset = s->address - instr->addr;
+            aOpCode->size_bytes = 6;
+            aOpCode->data = __builtin_bswap16(0x0F84) | offset << 16;
             break;
-
+        }
         case OP_INSTR_JNE:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0x75;
+        {
+            struct asm_symbol *s = lookupSymbol(instr->src->label);
+            int32_t offset = s->address - instr->addr;
+            aOpCode->size_bytes = 6;
+            aOpCode->data = __builtin_bswap16(0x0F85) | offset << 16;
             break;
-
+        }
         case OP_INSTR_JL:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0x7C;
+        {
+            struct asm_symbol *s = lookupSymbol(instr->src->label);
+            int32_t offset = s->address - instr->addr;
+            aOpCode->size_bytes = 6;
+            aOpCode->data = __builtin_bswap16(0x0F8C) | offset << 16;
             break;
-
+        }
         case OP_INSTR_JG:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0x7F;
+        {
+            struct asm_symbol *s = lookupSymbol(instr->src->label);
+            int32_t offset = s->address - instr->addr;
+            aOpCode->size_bytes = 6;
+            aOpCode->data = __builtin_bswap16(0x0F8F) | offset << 16;
             break;
-
+        }
         case OP_INSTR_JLE:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0x7E;
+        {
+            struct asm_symbol *s = lookupSymbol(instr->src->label);
+            int32_t offset = s->address - instr->addr;
+            aOpCode->size_bytes = 6;
+            aOpCode->data = __builtin_bswap16(0x0F8E) | offset << 16;
             break;
-
+        }
         case OP_INSTR_JGE:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0x7D;
+        {
+            struct asm_symbol *s = lookupSymbol(instr->src->label);
+            int32_t offset = s->address - instr->addr;
+            aOpCode->size_bytes = 6;
+            aOpCode->data = __builtin_bswap16(0x0F8D) | offset << 16;
             break;
-
+        }
         case OP_INSTR_JMP:
            struct asm_symbol *s = lookupSymbol(instr->src->label);
            int32_t offset = s->address - instr->addr;
