@@ -269,7 +269,7 @@ void instructionResolve(struct asm_instr* instr)
             break;
 
         case OP_INSTR_CALL:
-            text_address += 1;
+            text_address += 5;
             break;
 
         case OP_INSTR_CQO:

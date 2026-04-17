@@ -821,8 +821,9 @@ struct op_code* instructionOpCode(struct asm_instr* instr)
             break;
 
         case OP_INSTR_CALL:
-            aOpCode->size_bytes = 1;
-            aOpCode->data = 0xE8;
+            aOpCode->size_bytes = 5;
+            int32_t offset0 = 0;
+            aOpCode->data = 0xE8 | offset0 << 8;
             break;
 
         case OP_INSTR_CQO:
