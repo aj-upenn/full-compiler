@@ -9,6 +9,7 @@ extern struct asm_program * program_pointer;
 //extern long text_address = 0;
 const unsigned int SHSTRTAB_LEN = 60;
 const unsigned int HEADER_LEN = 64;
+int num_quads = 0;
 
 void codeGen() {
 
@@ -102,6 +103,7 @@ int strtabEntries()
     return length + 2;
 }
 
+
 void emitDescription(struct binary_section *s, struct section_description * d)
 {
     emit4(s, d->sh_name);
@@ -136,7 +138,7 @@ void setSectionDescriptions(struct binary_section *s, uint32_t text_size, uint32
     struct section_description* notegnustack = createBinarySectionDescription(0x2c,0x01,0,0,HEADER_LEN+text_size+extraSize,0,0,0,0x01,0);
     emitDescription(s, notegnustack);
 
-    struct section_description* symtab = createBinarySectionDescription(0x01,0x02,0,0,HEADER_LEN+text_size+text_padding+extraSize,data_size,0x06,strtabEntries()-1,0x08,0x18);
+    struct section_description* symtab = createBinarySectionDescription(0x01,0x02,0,0,HEADER_LEN+text_size+text_padding+extraSize,data_size,0x06,strtabEntries()-num_quads-1,0x08,0x18);
     emitDescription(s, symtab);
 
     struct section_description* strtab = createBinarySectionDescription(0x09,0x03,0,0,HEADER_LEN+text_size+text_padding+data_size+extraSize,strTabStringLength,0,0,0x01,0);
@@ -196,8 +198,15 @@ void setDataStrtab(struct binary_section *data, struct binary_section *strtab)
 
         uint8_t bind = symb->is_global ? STB_GLOBAL : STB_LOCAL;
         uint8_t info = ELF64_ST_INFO(bind, 0);
+        
+        /* if(!strcmp(symb->name, "main"))
+        {
 
-        b = createBinarySymbol(name_index, info, 0, symb->kind == SECTION_DATA ? 0x02 : 0x01, symb->address, 0);
+        }
+        else
+        { */
+            b = createBinarySymbol(name_index, info, 0, symb->kind == SECTION_DATA ? 0x02 : 0x01, symb->address, 0);
+        //}
         emitSymbol(data, b);
 
         symb = symb->next;
@@ -284,6 +293,15 @@ struct binary_section * setInstructions(struct binary_section *s)
                 }
                 extra[extra_offset] = 0;
                 extra_offset += 1;
+            }
+            else if(line->directive->kind == DIR_QUAD){
+                //int length = strlen(line->directive->string);
+                uint64_t v = line->directive->value;
+                memcpy(&extra[extra_offset], &v, 8);
+                extra_offset += 8;
+                num_quads++;
+                
+               // emit4(s, line->directive->value);
             }
         }
         line = line->next;
